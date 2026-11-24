@@ -87,8 +87,8 @@ Build the root `CMakeLists.txt` with CMake and a C++17 compiler. Windows is
 the local validation baseline; the hosted workflows build the other platforms.
 Documentation and source comments are written in English.
 
-Dependency versions are selected by release tags. Before the first hosted build
-of this migration, publish `fltk-css` **v0.1.0**, then `fltk-cell` **v0.1.0**.
+Dependency versions are selected by release tags. The widget libraries
+`fltk-css`, `fltk-cell` and `fltk-dock` are published as **v0.1.0**.
 Local development can use explicit sibling source paths instead. See
 [dependencies and release order](docs/DEPENDENCIES.md).
 

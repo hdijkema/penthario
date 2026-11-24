@@ -147,6 +147,16 @@ class ReleaseAssetsTest(unittest.TestCase):
         self.assertIn("-DPGADM_RELEASE_VERSION=0.2.0", application["config-opts"])
         directory_source = next(source for source in application["sources"] if source["type"] == "dir")
         self.assertEqual((output.parent / directory_source["path"]).resolve(), ROOT)
+        # Offline builds must stage every widget library, including docking.
+        for library, option in (("fltk-css", "FLTK_CELL_CSS_SOURCE_DIR"),
+                                ("fltk-cell", "PGADM_FLTK_CELL_SOURCE_DIR"),
+                                ("fltk-dock", "PGADM_FLTK_DOCK_SOURCE_DIR")):
+            with self.subTest(library=library):
+                source = next(item for item in application["sources"]
+                              if item.get("dest") == f"vendor/{library}")
+                self.assertEqual(source["tag"], "v0.1.0")
+                self.assertIn(f"-D{option}=/run/build/pgadmin-jr/vendor/{library}",
+                              application["config-opts"])
         prepare("", output)
         application = json.loads(output.read_text())["modules"][-1]
         self.assertIn("-DPGADM_RELEASE_VERSION=", application["config-opts"])

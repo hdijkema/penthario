@@ -71,6 +71,7 @@
         "-DFLTK_BACKEND_WAYLAND=OFF",
         "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
         "-DPGADM_FLTK_CELL_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-cell",
+        "-DPGADM_FLTK_DOCK_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-dock",
         "-DFLTK_CELL_CSS_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-css",
         "-DFETCHCONTENT_SOURCE_DIR_FLTK=/run/build/pgadmin-jr/vendor/fltk",
         "-DFETCHCONTENT_SOURCE_DIR_FLTK_JSON=/run/build/pgadmin-jr/vendor/json",
@@ -121,6 +122,12 @@
           "url": "https://github.com/hdijkema/fltk-cell.git",
           "tag": "v0.1.0",
           "dest": "vendor/fltk-cell"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/hdijkema/fltk-dock.git",
+          "tag": "v0.1.0",
+          "dest": "vendor/fltk-dock"
         },
         {
           "type": "git",

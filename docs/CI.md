@@ -3,8 +3,9 @@
 The main `.github/workflows/build.yml` builds the native FLTK application in
 Release mode. Windows uses MSVC, Debian uses GCC, and macOS uses Apple Clang.
 Native build dependencies and the first source-release order are in
-[DEPENDENCIES.md](DEPENDENCIES.md). Publish fltk-css v0.1.0 and then fltk-cell
-v0.1.0 before expecting a clean application build to fetch them.
+[DEPENDENCIES.md](DEPENDENCIES.md). Clean application builds require published
+`v0.1.0` tags for fltk-css, fltk-cell and fltk-dock. A local source override can
+hide a missing remote tag; it does not establish that a hosted build can fetch it.
 
 ## Jobs
 
@@ -24,6 +25,12 @@ The disposable local PostgreSQL integration runner is not a hosted CI service.
 Reports are Actions artifacts, separate from distributable packages. Other
 platforms must be validated by their hosted runners; local Windows success is
 not proof of a successful macOS/Linux package.
+
+If configuration fails with `invalid reference: v0.1.0` in a dependency's clone
+step, check that library's remote tags with `git ls-remote --tags <repository>`.
+Publish the tested library version before rerunning the application workflow.
+The Flatpak manifest must also stage each widget library under `vendor/` and set
+its explicit source directory: its CMake phase runs without network access.
 
 ## Publishing
 
@@ -51,5 +58,5 @@ Expected files for version 0.3.5:
 - `pgadmin-jr-0.3.5-macos-arm64.dmg`
 
 Local helpers test version resolution, asset completeness and packaging audits.
-They do not publish releases. Package/release tags have not been pushed by this
-migration work.
+They do not publish releases. Application release versions are changed separately
+from dependency fixes.
