@@ -1595,7 +1595,7 @@ void Window::detail(const Cell &cell)
     struct Navigation
     {
         Details *state;
-        decltype(render) *render;
+        decltype(render) *render_page;
     };
     Navigation navigation{&state, &render};
     previous.callback(
@@ -1604,7 +1604,7 @@ void Window::detail(const Cell &cell)
             auto *n = static_cast<Navigation *>(p);
             if (n->state->current)
                 --n->state->current;
-            (*n->render)(*n->state);
+            (*n->render_page)(*n->state);
         },
         &navigation);
     next.callback(
@@ -1613,7 +1613,7 @@ void Window::detail(const Cell &cell)
             auto *n = static_cast<Navigation *>(p);
             if (n->state->current + 1 < n->state->offsets->size())
                 ++n->state->current;
-            (*n->render)(*n->state);
+            (*n->render_page)(*n->state);
         },
         &navigation);
     copy.callback(
