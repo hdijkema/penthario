@@ -17,9 +17,15 @@ class Form
     Fl_Double_Window window_;
     int next_ = 16;
     bool accepted_ = false;
+    Json &dialogs_;
+    const Fl_Window &parent_;
+    std::string id_;
 
   public:
-    explicit Form(const char *title) : window_(680, 500, title) {}
+    Form(const char *title, Json &dialogs, const Fl_Window &parent)
+        : window_(680, 500, title), dialogs_(dialogs), parent_(parent), id_(title)
+    {
+    }
     Fl_Input *input(const std::string &label, const std::string &value = {}, bool secret = false)
     {
         auto *field = new Fl_Input(215, next_, 440, 28);
@@ -62,6 +68,7 @@ class Form
         window_.size(680, next_ + 52);
         window_.set_modal();
         localize(window_);
+        DialogPlacement placement(window_, dialogs_, id_, parent_);
         window_.show();
         while (window_.shown())
             Fl::wait();
@@ -73,8 +80,9 @@ struct Answer
     bool success = false, clipped = false;
     std::vector<Section> sections;
 };
-Answer sessionDialog(const Profile &profile, const std::string &database, const std::string &secret,
-                     const std::string &sql, const char *title)
+Answer sessionDialog(Json &dialogs, const Fl_Window &parent, const Profile &profile,
+                     const std::string &database, const std::string &secret, const std::string &sql,
+                     const char *title)
 {
     Fl_Text_Buffer buffer;
     Fl_Double_Window dialog(840, 530, title);
@@ -109,6 +117,7 @@ Answer sessionDialog(const Profile &profile, const std::string &database, const 
     dialog.callback(callback, &control);
     dialog.resizable(view);
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs, std::string("session-") + title, parent);
     dialog.show();
     session.connect(profile, database, secret);
     auto start = std::chrono::steady_clock::now();
@@ -396,7 +405,7 @@ void Window::editSelectedProfile()
     auto *p = profile(selected->second.profile);
     if (!p)
         return;
-    Form form("Edit connection profile");
+    Form form("Edit connection profile", dialogs_, *this);
     auto *name = form.input("Name", p->name);
     auto *host = form.input("Host", p->host);
     auto *port = form.input("Port", p->port);
@@ -553,7 +562,7 @@ void Window::databaseTask(int operation)
                             "VACUUM",          "ANALYZE",          "REINDEX"};
     if (operation < 0 || operation > 6)
         return;
-    Form form(titles[operation]);
+    Form form(titles[operation], dialogs_, *this);
     form.note("Server: " + p->host + ":" + p->port + " | User: " + p->user + " | Database: " + database);
     Fl_Input *name = nullptr, *confirmation = nullptr;
     Fl_Check_Button *plain = nullptr, *clean = nullptr, *skip = nullptr, *extra = nullptr;
@@ -623,7 +632,7 @@ void Window::databaseTask(int operation)
             auto schema = node.kind == 3 ? node.schema : "", relation = node.kind == 3 ? node.name : "";
             auto sql = maintenanceSql(task, database, schema, relation, extra ? extra->value() != 0 : true,
                                       extra ? extra->value() != 0 : true);
-            sessionDialog(*p, database, secrets_[p->id], sql, titles[operation]);
+            sessionDialog(dialogs_, *this, *p, database, secrets_[p->id], sql, titles[operation]);
             return;
         }
         ToolRequest request;
@@ -664,6 +673,7 @@ void Window::databaseTask(int operation)
         cancel.callback(callback, &control);
         dialog.callback(callback, &control);
         localize(dialog);
+        DialogPlacement placement(dialog, dialogs_, std::string("tool-") + titles[operation], *this);
         dialog.show();
         auto started = std::chrono::steady_clock::now();
         auto completed = std::chrono::steady_clock::time_point{};
@@ -712,7 +722,8 @@ void Window::manageRoles()
         return;
     }
     auto database = selected == nodes_.end() ? p->database : selected->second.database;
-    auto loaded = sessionDialog(*p, p->database, secrets_[p->id], rolesQuery(), "Loading server roles");
+    auto loaded = sessionDialog(dialogs_, *this, *p, p->database, secrets_[p->id], rolesQuery(),
+                                "Loading server roles");
     if (!loaded.success)
         return;
     auto rows = data(loaded);
@@ -759,12 +770,12 @@ void Window::manageRoles()
             return;
         if (option == 2)
         {
-            auto rights = sessionDialog(*p, p->database, secrets_[p->id],
+            auto rights = sessionDialog(dialogs_, *this, *p, p->database, secrets_[p->id],
                                         rightsQuery(selected_name, database), "Loading database privileges");
             if (!rights.success)
                 return;
             Json before = Json::object();
-            Form form("Database privileges");
+            Form form("Database privileges", dialogs_, *this);
             form.note(
                 selected_name + " on " + database +
                 ". Effective rights may also come from PUBLIC, membership, ownership or superuser status.");
@@ -791,8 +802,8 @@ void Window::manageRoles()
             {
                 auto sql = rightsSql(selected_name, database, desired, before, owner->value() != 0);
                 if (!sql.empty())
-                    sessionDialog(*p, p->database, secrets_[p->id], "BEGIN;\n" + sql + "COMMIT;",
-                                  "Apply database privileges");
+                    sessionDialog(dialogs_, *this, *p, p->database, secrets_[p->id],
+                                  "BEGIN;\n" + sql + "COMMIT;", "Apply database privileges");
             }
             catch (const std::exception &e)
             {
@@ -801,7 +812,7 @@ void Window::manageRoles()
             return;
         }
     }
-    Form form(action == 1 ? "Create server role" : "Edit server role");
+    Form form(action == 1 ? "Create server role" : "Edit server role", dialogs_, *this);
     auto *name = form.input("Role name", selected_name);
     if (action == 2)
         name->readonly(1);
@@ -844,7 +855,7 @@ void Window::manageRoles()
         desired["memberships"] = values;
         auto sql = roleSql(desired, original);
         if (!sql.empty())
-            sessionDialog(*p, p->database, secrets_[p->id], "BEGIN;\n" + sql + "COMMIT;",
+            sessionDialog(dialogs_, *this, *p, p->database, secrets_[p->id], "BEGIN;\n" + sql + "COMMIT;",
                           "Apply server role");
         std::fill(sql.begin(), sql.end(), '\0');
     }
@@ -887,7 +898,8 @@ void Window::inspectObject()
               "row_security, c.relispartition AS partition, obj_description(c.oid,'pg_class') AS comment "
               "FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=" +
               quoteLiteral(node.schema) + " AND c.relname=" + quoteLiteral(node.name) + ";";
-    auto answer = sessionDialog(*p, node.database, secrets_[p->id], sql, "Object properties");
+    auto answer =
+        sessionDialog(dialogs_, *this, *p, node.database, secrets_[p->id], sql, "Object properties");
     if (!answer.success)
         return;
     Section properties;
@@ -913,12 +925,14 @@ void Window::inspectObject()
     table.clear(true);
     table.append(0, properties);
     table.inspect = [this](const Cell &cell) { detail(cell); };
+    property_panel.resizable(table);
     property_panel.end();
     Fl_Group sql_panel(14, 40, 952, 550, "Definition SQL");
     Fl_Text_Display editor(16, 43, 948, 490);
     editor.buffer(&definition);
     editor.textfont(FL_COURIER);
     Fl_Button copy(690, 545, 120, 30, "Copy SQL"), save_sql(825, 545, 130, 30, "Save SQL...");
+    sql_panel.resizable(editor);
     sql_panel.end();
     tabs.end();
     Fl_Button close(842, 605, 125, 30, "Close");
@@ -981,6 +995,15 @@ void Window::inspectObject()
     copy.deactivate();
     save_sql.deactivate();
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs_, "object-properties", *this);
+    auto &saved = dialogs_["object-properties"];
+    if (saved.is_object())
+    {
+        if (saved.contains("widths") && saved["widths"].is_array())
+            table.widths(saved["widths"].get<std::vector<int>>());
+        if (saved.value("sql_page", false))
+            tabs.value(&sql_panel);
+    }
     dialog.show();
     std::string logs;
     while (dialog.shown())
@@ -1041,6 +1064,8 @@ void Window::inspectObject()
             }
         }
     }
+    dialogs_["object-properties"]["widths"] = table.widths();
+    dialogs_["object-properties"]["sql_page"] = tabs.value() == &sql_panel;
     job.reset();
     editor.buffer(nullptr);
     std::error_code ignored;

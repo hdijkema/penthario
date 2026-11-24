@@ -92,6 +92,11 @@ int main(int argc, char **argv)
         profile.name = "Regression server";
         profile.database = "selected_database";
         state["profiles"] = std::vector<pgjr::Profile>{profile};
+        const auto monitors = pgjr::monitorConfiguration();
+        state["layouts"][monitors] = {{"window", {{"x", 100}, {"y", 90}, {"w", 1100}, {"h", 720}}},
+                                      {"dialogs", pgjr::Json::object()}};
+        state["layouts"]["other-monitor-configuration"] = {
+            {"window", {{"x", 2000}, {"y", 80}, {"w", 1400}, {"h", 900}}}};
         pgjr::writeFile(settings, state.dump());
         pgjr::QueryLibrary(settings.parent_path() / "queries")
             .save("Regression query", "select 1;", "Regression/category", {});
@@ -102,6 +107,37 @@ int main(int argc, char **argv)
                           "} cell.section { background: #c5d7e9; } cell.header { background: #dce6f0; }"),
                 "CSS parse");
         pgjr::Window window(css, settings);
+        require(window.w() == 1100 && window.h() == 720,
+                "Main size restores from the current monitor configuration");
+        {
+            Fl_Double_Window dialog(500, 300);
+            dialog.end();
+            dialog.resizable(dialog);
+            pgjr::restoreRectangle(dialog, {{"x", -90000}, {"y", -90000}, {"w", 90000}, {"h", 90000}});
+            int sx, sy, sw, sh;
+            Fl::screen_work_area(sx, sy, sw, sh, dialog.x(), dialog.y());
+            require(dialog.x() >= sx && dialog.y() >= sy && dialog.x() + dialog.w() <= sx + sw &&
+                        dialog.y() + dialog.h() <= sy + sh,
+                    "A disconnected screen or oversized rectangle stays in the current work area");
+            pgjr::Json dialogs = pgjr::Json::object();
+            {
+                pgjr::DialogPlacement placement(dialog, dialogs, "test", window);
+                dialog.resize(sx + 40, sy + 60, 600, 380);
+            }
+            dialog.resize(sx + 80, sy + 80, 500, 300);
+            {
+                pgjr::DialogPlacement placement(dialog, dialogs, "test", window);
+                require(dialog.w() == 600 && dialog.h() == 380 && dialog.x() == sx + 40,
+                        "Resizable dialog position and size restore independently");
+            }
+            Fl_Double_Window form(470, 430);
+            form.end();
+            {
+                pgjr::DialogPlacement placement(form, dialogs, "test", window);
+                require(form.w() == 470 && form.h() == 430 && form.x() == sx + 40,
+                        "Fixed forms restore position while retaining usable control dimensions");
+            }
+        }
         window.refreshLibrary();
         window.refreshLibrary(false);
         auto broken = directory / "broken-workspace.json";
@@ -423,7 +459,60 @@ int main(int argc, char **argv)
                         restored_tab->editor->color() == fl_rgb_color(22, 40, 57),
                     "Theme base and CSS path are restored from the isolated workspace");
         }
+        struct DialogProbe
+        {
+            bool reopened = false;
+            pgjr::Json rectangle;
+        } dialog_probe;
+        auto close_details = +[](void *data)
+        {
+            auto &probe = *static_cast<DialogProbe *>(data);
+            auto *dialog = Fl::modal();
+            if (!dialog)
+                return;
+            if (probe.rectangle.empty())
+            {
+                dialog->resize(dialog->x(), dialog->y(), 920, 640);
+                probe.rectangle = pgjr::windowRectangle(*dialog);
+            }
+            else
+                probe.reopened = pgjr::windowRectangle(*dialog) == probe.rectangle;
+            dialog->hide();
+        };
+        pgjr::Cell sample;
+        sample.text = "Wrapped cell detail geometry test";
+        Fl::add_timeout(0.05, close_details, &dialog_probe);
+        window.detail(sample);
+        Fl::add_timeout(0.05, close_details, &dialog_probe);
+        window.detail(sample);
+        require(dialog_probe.reopened, "Real cell details reopen at their previous position and size");
+        tab->output->value(tab->plan_panel);
         window.exit();
+        const auto saved_workspace = pgjr::Json::parse(pgjr::readFile(settings));
+        require(saved_workspace["layouts"].contains("other-monitor-configuration"),
+                "Saving one monitor configuration preserves other configurations");
+        require(saved_workspace["layouts"][monitors]["dialogs"]["cell-details"]["w"] == 920,
+                "Dialog rectangles are persisted in the isolated workspace");
+        {
+            FLTK_Css restored_css;
+            pgjr::Window restored(restored_css, settings, true);
+            require(pgjr::windowRectangle(restored) == pgjr::windowRectangle(window),
+                    "Main position and size survive a workspace restart");
+            require(findTab(restored)->planSelected(), "The selected result page survives restart");
+        }
+        {
+            auto maximized_state = saved_workspace;
+            maximized_state["layouts"][monitors]["window"]["maximized"] = true;
+            const auto isolated = directory / "maximized-workspace.json";
+            pgjr::writeFile(isolated, maximized_state.dump());
+            FLTK_Css maximized_css;
+            pgjr::Window maximized(maximized_css, isolated);
+            // Saving before show must retain the request and its normal restore rectangle.
+            maximized.useTheme("light");
+            const auto geometry = pgjr::Json::parse(pgjr::readFile(isolated))["layouts"][monitors]["window"];
+            require(geometry["maximized"] == true && geometry["w"] == window.w(),
+                    "A pending maximize preserves the normal window size");
+        }
         require(pgjr::Json::parse(pgjr::readFile(settings))["tabs"][0]["widths"][0] == 280,
                 "Workspace width persistence");
         require(pgjr::Json::parse(pgjr::readFile(settings))["tabs"][0]["split"].get<double>() ==

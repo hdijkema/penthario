@@ -1,5 +1,6 @@
 #pragma once
 #include "core.h"
+#include "window_state.h"
 #include "session.h"
 #include "result_table.h"
 #include "sql_editor.h"
@@ -65,6 +66,7 @@ class Window : public Fl_Css_Window
   public:
     Window(FLTK_Css &, std::filesystem::path settings, bool smoke = false);
     ~Window() override;
+    void show() override;
     void resize(int, int, int, int) override;
     void newQuery(std::string profile = {}, std::string database = {}, std::string text = {},
                   std::string name = {});
@@ -157,7 +159,8 @@ class Window : public Fl_Css_Window
     int catalog_kind_ = 0;
     bool catalog_wait_ = false;
     unsigned sequence_ = 1;
-    bool smoke_ = false;
+    bool smoke_ = false, restore_maximized_ = false;
+    Json layouts_ = Json::object(), dialogs_ = Json::object(), normal_rectangle_ = Json::object();
     void refreshCatalog();
     void updateTarget(QueryTab &);
     std::vector<std::unique_ptr<Fl_Image>> icons_;

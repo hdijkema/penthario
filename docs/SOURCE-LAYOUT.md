@@ -5,6 +5,7 @@ The current application is in `src/fltk/`:
 | Files | Responsibility |
 | --- | --- |
 | main, window | Startup, native UI, tabs, workspace orchestration |
+| window_state | Screen-aware window and dialog geometry; monitor layout keys |
 | core | STL values, SQL splitting, files, profile JSON and vault bridge |
 | session | Worker-owned libpq sessions, cancellation, previews and full export |
 | result_table | Continuous result model and fltk-cell integration |

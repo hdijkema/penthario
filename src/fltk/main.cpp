@@ -61,12 +61,6 @@ int main(int argc, char **argv)
             window.icon(rgb);
         else
             throw std::runtime_error("Application icon could not be rendered");
-        int screen_x = 0, screen_y = 0, screen_w = 0, screen_h = 0;
-        Fl::screen_work_area(screen_x, screen_y, screen_w, screen_h, 0);
-        const int width = std::max(1000, std::min(1200, screen_w - 24)),
-                  height = std::max(560, std::min(820, screen_h - 70));
-        window.resize(screen_x + std::max(0, (screen_w - width) / 2),
-                      screen_y + std::max(0, (screen_h - height) / 2), width, height);
         window.show();
         if (smoke)
         {

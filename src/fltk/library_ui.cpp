@@ -265,6 +265,7 @@ void Window::searchReplace()
     dialog.end();
     dialog.set_modal();
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs_, "find-replace", *this);
     dialog.show();
     while (dialog.shown())
         Fl::wait();

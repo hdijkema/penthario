@@ -569,6 +569,11 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
     resizable(nullptr);
     size_range(1000, 560);
     callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->exit(); }, this);
+    int sx, sy, sw, sh;
+    Fl::screen_work_area(sx, sy, sw, sh, 0);
+    const int width = std::min(1200, sw - 24), height = std::min(820, sh - 70);
+    resize(sx + (sw - width) / 2, sy + (sh - height) / 2, width, height);
+    normal_rectangle_ = windowRectangle(*this);
     load();
     for (const auto &p : profiles_)
     {
@@ -589,12 +594,23 @@ Window::~Window()
     catalog_.reset();
     queries_.clear();
 }
+void Window::show()
+{
+    Fl_Css_Window::show();
+    if (restore_maximized_)
+    {
+        restore_maximized_ = false;
+        maximize();
+    }
+}
 void Window::resize(int x, int y, int w, int h)
 {
     Fl_Css_Window::resize(x, y, w, h);
     menu_->resize(0, 0, w, 28);
     dock_->resize(8, 74, w - 16, h - 104);
     status_->resize(8, h - 26, w - 16, 22);
+    if (shown() && !maximize_active())
+        normal_rectangle_ = windowRectangle(*this);
 }
 void Window::applyTheme()
 {
@@ -765,6 +781,24 @@ void Window::load()
     try
     {
         auto state = Json::parse(readFile(settings_));
+        layouts_ = state.value("layouts", Json::object());
+        if (!layouts_.is_object())
+            layouts_ = Json::object();
+        const auto saved_layout = layouts_.value(monitorConfiguration(), Json::object());
+        if (saved_layout.is_object())
+        {
+            dialogs_ = saved_layout.value("dialogs", Json::object());
+            if (saved_layout.contains("window"))
+            {
+                const auto &geometry = saved_layout["window"];
+                restoreRectangle(*this, geometry);
+                normal_rectangle_ = windowRectangle(*this);
+                restore_maximized_ = geometry.is_object() && geometry.contains("maximized") &&
+                                     geometry["maximized"].is_boolean() && geometry["maximized"].get<bool>();
+            }
+            if (saved_layout.contains("docking"))
+                state["docking"] = saved_layout["docking"];
+        }
         try
         {
             theme_.load(state.value("theme", "light"), std::filesystem::u8path(state.value("theme_css", "")));
@@ -810,6 +844,10 @@ void Window::load()
             current()->editor->insert_position(
                 std::clamp(entry.value("cursor", 0), 0, current()->sql.length()));
             current()->result->widths(entry.value("widths", std::vector<int>{}));
+            const auto output = entry.value("output", "results");
+            current()->output->value(output == "plan"       ? current()->plan_panel
+                                     : output == "messages" ? current()->message_panel
+                                                            : current()->result_panel);
         }
         auto active = state.value("active", 0);
         if (active >= 0 && active < static_cast<int>(queries_.size()))
@@ -864,6 +902,21 @@ void Window::save()
                                     {"h", panel.h},
                                     {"tab_group", panel.tab_group},
                                     {"active", panel.active}});
+    auto geometry = normal_rectangle_;
+    if (!maximize_active())
+        geometry = windowRectangle(*this);
+    geometry["maximized"] = maximize_active() != 0 || restore_maximized_;
+    const auto configuration = monitorConfiguration();
+    layouts_[configuration] = {{"window", geometry}, {"dialogs", dialogs_}, {"docking", state["docking"]}};
+    // Bound old monitor configurations without discarding the active one.
+    while (layouts_.size() > 16)
+    {
+        auto old = layouts_.begin();
+        if (old.key() == configuration)
+            ++old;
+        layouts_.erase(old);
+    }
+    state["layouts"] = layouts_;
     for (std::size_t i = 0; i < queries_.size(); ++i)
     {
         const auto &tab = queries_[i];
@@ -876,6 +929,9 @@ void Window::save()
                                  {"path", tab->path},
                                  {"widths", tab->result->widths()},
                                  {"split", tab->splitRatio()},
+                                 {"output", tab->output->value() == tab->plan_panel      ? "plan"
+                                            : tab->output->value() == tab->message_panel ? "messages"
+                                                                                         : "results"},
                                  {"library", tab->saved_name},
                                  {"dirty", tab->dirty},
                                  {"bom", tab->bom},
@@ -928,6 +984,7 @@ void Window::editProfile()
     dialog.end();
     dialog.set_modal();
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs_, "new-profile", *this);
     dialog.show();
     while (dialog.shown())
         Fl::wait();
@@ -1513,6 +1570,7 @@ void Window::about()
     dialog.end();
     dialog.set_modal();
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs_, "about", *this);
     dialog.show();
     while (dialog.shown())
         Fl::wait();
@@ -1651,6 +1709,7 @@ void Window::detail(const Cell &cell)
     dialog.end();
     dialog.set_modal();
     localize(dialog);
+    DialogPlacement placement(dialog, dialogs_, "cell-details", *this);
     dialog.show();
     while (dialog.shown())
         Fl::wait();

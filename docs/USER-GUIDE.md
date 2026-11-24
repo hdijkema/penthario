@@ -79,6 +79,27 @@ See [themes](THEMES.md) for examples and supported selectors.
 
 ## Settings and migration
 
+The workspace remembers the main window's position, normal size and maximized
+state, plus docked/floating panel placement, sizes, grouping and visibility.
+These layouts are stored separately for each monitor arrangement, resolution,
+work area and scaling configuration. The appropriate layout is restored at
+startup; up to sixteen configurations are kept. A new configuration starts with
+a centered main window and the last saved panel arrangement. Floating windows
+are kept within an available screen.
+
+Cell details, object properties and task-log dialogs remember their position and
+resizable dimensions. Fixed forms, Find/Replace and About remember position;
+their control layout keeps its designed size. Object properties also remembers
+column widths and its selected page. Native file pickers and standard message
+boxes retain their platform behavior; brief credential/export progress indicators
+do not save geometry. Query splits, column widths and the selected result page
+are restored with each tab. Settings are written on normal exit and existing
+workspace-save actions; forced process termination can lose recent changes.
+
+All of this uses the existing JSON workspace; no additional preferences library
+or separate settings file is needed. Dialog rectangles are checked against the
+current screens before display, including after a monitor is disconnected.
+
 See [workspace migration](FLTK.md#workspace-migration) for locations and import
 from a legacy workspace. Original settings and SQL files are preserved;
 reenter passwords in the native vault. Use `--language nl`, `en` or `de` for an

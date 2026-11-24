@@ -42,6 +42,14 @@ native Apple Silicon bundle. Platform scripts document their system packages.
 
 ## Ownership and concurrency
 
+`window_state` uses FLTK screen/work rectangles and scale to identify monitor
+configurations. `Window` stores its normal rectangle, maximized flag, docking
+snapshot and dialog rectangles under that key in the existing workspace JSON.
+`DialogPlacement` restores one dialog before display and captures its final
+rectangle on scope exit; it performs no file I/O. Fixed forms retain their
+designed dimensions. Layouts are selected at startup and captured when saving;
+monitor hot-plug does not rearrange an active workspace automatically.
+
 Appearance is handled by `Theme`, which loads embedded CSS and optional local
 overrides, updates the FLTK palette and applies native widget properties.
 `Window::applyTheme` refreshes dock panels, toolbar SVGs and each tab's syntax
