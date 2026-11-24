@@ -20,6 +20,12 @@ hide a missing remote tag; it does not establish that a hosted build can fetch i
 - macOS Apple Silicon: Homebrew libpq@18 and dylibbundler, native arm64 Release,
   tests, dependency audit, ad-hoc signing and a mounted-DMG startup check.
 
+Actions run the fast core, translation and XLSX tests, plus package/startup checks.
+Interactive UI tests are reserved for local testing:
+`PGADM_FLTK_UI_TESTS=OFF` avoids building and running them in Windows, Debian and
+macOS jobs. Flatpak already disables application tests. Noninteractive tests have
+a 60-second timeout; local UI tests have a 120-second timeout.
+
 Normal tests need no database, production credentials or signing secrets.
 The disposable local PostgreSQL integration runner is not a hosted CI service.
 Reports are Actions artifacts, separate from distributable packages. Other

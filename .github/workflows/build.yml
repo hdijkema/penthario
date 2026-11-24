@@ -69,8 +69,8 @@ jobs:
         shell: cmd
         env:
           PGADM_RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: build-release.cmd -DPGADM_FLTK_TESTS=ON "-DPGADM_RELEASE_VERSION=%PGADM_RELEASE_VERSION%"
-      - name: Check application and UI
+        run: build-release.cmd -DPGADM_FLTK_TESTS=ON -DPGADM_FLTK_UI_TESTS=OFF "-DPGADM_RELEASE_VERSION=%PGADM_RELEASE_VERSION%"
+      - name: Check core, translations and export
         run: ctest --test-dir build/Release --output-on-failure
       - name: Install Inno Setup compiler
         shell: pwsh

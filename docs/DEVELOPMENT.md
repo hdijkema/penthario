@@ -89,7 +89,14 @@ placement. Until the first fltk-dock source tag is published, configure with
 
 `ctest` covers core behavior, real XLSX ZIP/XML output and native GUI rendering,
 editor behavior, translations and workspace restoration. It needs no database
-or credentials. Local integration is explicit and is not a CI database service:
+or credentials.
+
+Interactive UI tests are enabled by default for local builds. Use
+`-DPGADM_FLTK_UI_TESTS=OFF` for the smaller noninteractive test suite used by
+Actions. Configure with `-DPGADM_FLTK_TESTS=OFF` to omit all application tests.
+The package scripts keep their isolated application startup checks enabled.
+
+Local integration is explicit and is not a CI database service:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tests/run-fltk-integration.ps1

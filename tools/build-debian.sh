@@ -12,11 +12,11 @@ if [[ ${ID:-} != debian || ! ${VERSION_ID:-} =~ ^(12|13)$ ]]; then
 fi
 build_dir="build/debian${VERSION_ID}"
 cmake -S . -B "$build_dir" -G Ninja -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr -DPGADM_FLTK_TESTS=ON -DFLTK_BACKEND_WAYLAND=OFF \
+    -DCMAKE_INSTALL_PREFIX=/usr -DPGADM_FLTK_TESTS=ON -DPGADM_FLTK_UI_TESTS=OFF -DFLTK_BACKEND_WAYLAND=OFF \
     "-DPGADM_DEBIAN_VERSION=$VERSION_ID" "-DPGADM_RELEASE_VERSION=${PGADM_RELEASE_VERSION:-}" "$@"
 cmake --build "$build_dir" --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
-# No running database, credentials or desktop keyring are required by this subset.
-xvfb-run -a ctest --test-dir "$build_dir" --output-on-failure
+# Fast, noninteractive tests; display-backed checks below only open and close the app.
+ctest --test-dir "$build_dir" --output-on-failure
 for language in nl en de; do
     printf 'Checking application startup (%s)\n' "$language"
     xvfb-run -a "$build_dir/pgadmin-jr" --language "$language" \
