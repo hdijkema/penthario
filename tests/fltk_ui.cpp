@@ -93,8 +93,15 @@ int main(int argc, char **argv)
         profile.database = "selected_database";
         state["profiles"] = std::vector<pgjr::Profile>{profile};
         const auto monitors = pgjr::monitorConfiguration();
-        state["layouts"][monitors] = {{"window", {{"x", 100}, {"y", 90}, {"w", 1100}, {"h", 720}}},
-                                      {"dialogs", pgjr::Json::object()}};
+        // Hosted desktops can be smaller than the rendering fixture used below.
+        // Save a rectangle that fits this work area, so exact restoration is meaningful.
+        int work_x, work_y, work_w, work_h;
+        Fl::screen_work_area(work_x, work_y, work_w, work_h, 0);
+        const int saved_width = std::min(1100, std::max(160, work_w - 16));
+        const int saved_height = std::min(720, std::max(100, work_h - 48));
+        state["layouts"][monitors] = {
+            {"window", {{"x", work_x + 8}, {"y", work_y + 40}, {"w", saved_width}, {"h", saved_height}}},
+            {"dialogs", pgjr::Json::object()}};
         state["layouts"]["other-monitor-configuration"] = {
             {"window", {{"x", 2000}, {"y", 80}, {"w", 1400}, {"h", 900}}}};
         pgjr::writeFile(settings, state.dump());
@@ -107,8 +114,11 @@ int main(int argc, char **argv)
                           "} cell.section { background: #c5d7e9; } cell.header { background: #dce6f0; }"),
                 "CSS parse");
         pgjr::Window window(css, settings);
-        require(window.w() == 1100 && window.h() == 720,
-                "Main size restores from the current monitor configuration");
+        require(window.w() == saved_width && window.h() == saved_height,
+                ("Main size restores from the current monitor configuration: expected " +
+                 std::to_string(saved_width) + "x" + std::to_string(saved_height) + ", got " +
+                 std::to_string(window.w()) + "x" + std::to_string(window.h()))
+                    .c_str());
         {
             Fl_Double_Window dialog(500, 300);
             dialog.end();
@@ -473,6 +483,7 @@ int main(int argc, char **argv)
             if (probe.rectangle.empty())
             {
                 dialog->resize(dialog->x(), dialog->y(), 920, 640);
+                pgjr::restoreRectangle(*dialog, pgjr::windowRectangle(*dialog));
                 probe.rectangle = pgjr::windowRectangle(*dialog);
             }
             else
@@ -487,11 +498,14 @@ int main(int argc, char **argv)
         window.detail(sample);
         require(dialog_probe.reopened, "Real cell details reopen at their previous position and size");
         tab->output->value(tab->plan_panel);
+        // Rendering uses an intentionally fixed canvas; persistence uses a visible rectangle.
+        pgjr::restoreRectangle(window, pgjr::windowRectangle(window));
         window.exit();
         const auto saved_workspace = pgjr::Json::parse(pgjr::readFile(settings));
         require(saved_workspace["layouts"].contains("other-monitor-configuration"),
                 "Saving one monitor configuration preserves other configurations");
-        require(saved_workspace["layouts"][monitors]["dialogs"]["cell-details"]["w"] == 920,
+        require(saved_workspace["layouts"][monitors]["dialogs"]["cell-details"]["w"] ==
+                    dialog_probe.rectangle["w"],
                 "Dialog rectangles are persisted in the isolated workspace");
         {
             FLTK_Css restored_css;
