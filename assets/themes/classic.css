@@ -1,0 +1,24 @@
+/* pgadmin-jr: classic. Supported properties are documented in docs/THEMES.md. */
+* { color: #202020; background: #e5e5e5; selection-color: #235baa; border-color: #999999; font-family: sans-serif; font-size: 14px; }
+window, group, widget, label, menu, tabs, panel { background: #e5e5e5; color: #202020; }
+button { background: #e5e5e5; color: #202020; border: 1px solid #999999; border-radius: 0px; }
+button:hover { background: #d0dceb; }
+button:active { background: #d8d8d8; }
+button:disabled { color: #666666; }
+input, tree, editor, display, table, cell { background: #ffffff; color: #202020; }
+editor, display { font-family: monospace; }
+header, panel { background: #d8d8d8; color: #202020; }
+splitter { background: #999999; }
+scrollbar { background: #e5e5e5; selection-color: #999999; }
+cell { border: 1px solid #999999; }
+cell.header { background: #d8d8d8; font-weight: bold; }
+cell.section { background: #c7d3e4; font-weight: bold; }
+cell.status { background: #e5e5e5; color: #666666; }
+cell.null { color: #666666; }
+syntax.keyword { color: #0000a0; font-weight: bold; }
+syntax.comment { color: #176b29; }
+syntax.string { color: #983015; }
+icon.connect, icon.run { color: #21673f; }
+icon.profile { color: #634b94; }
+icon.new { color: #1b60a1; }
+icon.cancel { color: #a32727; }

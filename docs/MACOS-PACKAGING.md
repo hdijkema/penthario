@@ -1,13 +1,13 @@
 # macOS packaging
 
 The native workflow builds an Apple Silicon arm64 application for macOS 15 or
-newer. Intel/universal builds are not configured. Qt and macdeployqt are no
-longer used. Homebrew supplies libpq@18, Ninja and dylibbundler.
+newer. Intel/universal builds are not configured. Homebrew supplies libpq@18,
+Ninja and dylibbundler.
 
 `tools/build-macos.sh` builds Release, runs native tests and invokes
 `tools/package-macos.py`. The packager stages pgadmin-jr.app, PostgreSQL client
 tools, notices and dependent dylibs; rewrites dependencies into the bundle;
-audits executable/library imports and rejects Qt imports or external development
+audits executable/library imports and rejects external development
 paths; and ad-hoc signs the result. It creates a DMG, mounts it, and performs
 isolated startup/client-tool checks before publishing the artifact.
 

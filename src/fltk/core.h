@@ -32,7 +32,7 @@ std::string readFile(const std::filesystem::path &);
 std::string readSqlFile(const std::filesystem::path &, bool *bom = nullptr);
 // Write beside the destination and atomically replace it; failed publication preserves the previous file.
 void writeFile(const std::filesystem::path &, const std::string &);
-// Separate FLTK workspace; never modifies or reads the Qt version's state without explicit import.
+// Separate workspace; former settings are read only through explicit import.
 std::filesystem::path configDirectory();
 std::filesystem::path executableDirectory();
 std::string newId();

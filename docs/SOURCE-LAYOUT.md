@@ -13,14 +13,11 @@ The current application is in `src/fltk/`:
 | admin_sql, admin_dialogs | Validated administrative SQL and native dialogs |
 | tool_job | PostgreSQL subprocesses, backup/restore and elapsed/log progress |
 | xlsx_writer | Minimal libxlsxwriter wrapper and atomic file publication |
-| legacy_workspace | Read-only Qt workspace migration without linking Qt |
+| legacy_workspace | Read-only legacy workspace migration |
 | i18n | Embedded native translation catalog |
+| theme, themes.h.in | Embedded CSS themes, custom stylesheets and native widget styling |
 
 `cmake/FltkApplication.cmake` defines the active targets and dependencies;
 `FltkLinuxPackaging.cmake` defines the native DEB and `Xlsx.cmake` the export
-dependencies. `assets/` holds icons/notices, `translations/fltk-*.json` the UI
+dependencies. `assets/` holds icons/notices, `translations/fltk-ui.json` the UI
 catalog, `tools/` platform packaging and `tests/fltk_*` the native tests.
-
-Earlier Qt source folders and tests remain for reference. They are excluded
-from the default build and packages; `cmake/QtLegacy.cmake` is only included when
-`PGADM_BUILD_QT_LEGACY=ON` is explicitly requested.

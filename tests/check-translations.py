@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
-"""Check complete catalogs and protect placeholders used by QString::arg."""
+"""Validate the editable native JSON catalog, including duplicate source messages."""
 from collections import Counter
 from pathlib import Path
+import json
 import re
-import xml.etree.ElementTree as ET
+
+
+def unique_entries(pairs):
+    """Reject duplicate keys before JSON decoding can silently overwrite them."""
+    result = {}
+    for key, value in pairs:
+        assert key not in result, f"Duplicate catalog key: {key}"
+        result[key] = value
+    return result
+
 
 root = Path(__file__).resolve().parents[1]
-expected_keys = None
-for language in ("en", "de"):
-    catalog = ET.parse(root / "translations" / f"pgadmin_{language}.ts")
-    keys = set()
-    assert catalog.getroot().get("language") == language
-    for context in catalog.findall("context"):
-        for message in context.findall("message"):
-            source = message.findtext("source") or ""
-            translation = message.find("translation")
-            text = translation.text or "" if translation is not None else ""
-            label = f"{language}: {context.findtext('name')}: {source}"
-            assert translation is not None and not translation.get("type"), label
-            assert text, label
-            assert Counter(re.findall(r"%L?\d+|%n", source)) == Counter(re.findall(r"%L?\d+|%n", text)), label
-            assert source.count("\n") == text.count("\n"), label
-            keys.add((context.findtext("name"), source))
-    if expected_keys is not None:
-        assert keys == expected_keys, "Catalogs have different source messages"
-    expected_keys = keys
-    print(f"{language}: {len(keys)} complete translations; placeholders and newlines preserved")
+catalog = json.loads((root / "translations/fltk-ui.json").read_text(encoding="utf-8"),
+                     object_pairs_hook=unique_entries)
+assert catalog, "Empty translation catalog"
+for source, translations in catalog.items():
+    assert source and isinstance(translations, dict), source
+    assert set(translations) == {"nl", "de"}, source
+    for language, text in translations.items():
+        assert isinstance(text, str) and text, f"{language}: {source}"
+        assert Counter(re.findall(r"%L?\d+|%n", source)) == Counter(re.findall(r"%L?\d+|%n", text)), source
+        assert source.count("\n") == text.count("\n"), source
+print(f"{len(catalog)} messages: Dutch and German translations complete")

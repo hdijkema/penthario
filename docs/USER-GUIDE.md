@@ -23,15 +23,24 @@ the tab; Ctrl+W closes it with a prompt for unsaved changes.
 
 Save named query stores SQL in the query library, with an optional category and
 column widths. The right panel opens these queries and earlier history entries.
-Use Refresh saved queries after changing SQL files outside the application.
+Use Query > Saved queries > Refresh after changing SQL files outside the application.
 Closing the application normally restores tab SQL, names, database targets,
 cursors and widths on the next launch. Open connections are not persisted.
+
+The icon toolbar provides connection/profile, new query, run and cancel actions.
+Hover for translated tooltips. Search and editing commands are under Edit; named
+query operations are grouped under Query > Saved queries. Language is under
+View > Language, with Help as the final main menu.
+
+Drag the horizontal separator above the output tabs to give the editor or results
+more height; double-click it to reset. The ratio is saved separately for each tab.
 
 ## Results and exports
 
 Intermediate results retains the result sections of each statement in a single
 continuous table. Add `-- @resultaat: A descriptive heading` before a statement
-to name its section. Drag column-header boundaries to adjust widths. Double-click
+to name its section. Drag column-header boundaries to adjust widths. For a single
+result, the fixed column header contains the actual column names. Double-click
 a cell for wrapped text or paged binary/hex details; copy/save accesses the retained
 value, with a warning if it was clipped.
 
@@ -62,10 +71,16 @@ covers attributes, memberships and database privileges; the connected user needs
 PostgreSQL's required permissions. General object creation remains available via
 SQL. Use PostgreSQL tools for COPY protocol streaming.
 
+## Appearance
+
+Use **View → Theme** to select Light, Dark or Classic. You can load, reload and
+save custom CSS there too. The workspace remembers your theme and custom file.
+See [themes](THEMES.md) for examples and supported selectors.
+
 ## Settings and migration
 
 See [workspace migration](FLTK.md#workspace-migration) for locations and import
-from the earlier Qt version. Original settings and SQL files are preserved;
+from a legacy workspace. Original settings and SQL files are preserved;
 reenter passwords in the native vault. Use `--language nl`, `en` or `de` for an
 explicit interface language. Technical/server messages may remain English.
 

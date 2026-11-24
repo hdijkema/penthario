@@ -70,7 +70,7 @@ rename it; leaving the name empty restores the default title.
 ## Documentation and development
 
 The default application uses **FLTK**, **fltk-css** and **fltk-cell**, with STL
-values and libpq worker sessions. Qt is not required to build or run it.
+values and libpq worker sessions.
 See [FLTK implementation](docs/FLTK.md) for limits and migration details.
 
 - [User and build guide](docs/USER-GUIDE.md): detailed usage, shortcuts, settings,
@@ -94,3 +94,6 @@ Local development can use explicit sibling source paths instead. See
 
 See [LICENSE](LICENSE) for the project licence. Third-party icon and library
 licence notices are included with the source and distribution packages.
+
+Appearance can be changed under **View > Theme**. Built-in Light, Dark and
+Classic themes support local CSS overrides; see [themes](docs/THEMES.md).

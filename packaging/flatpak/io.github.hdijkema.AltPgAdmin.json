@@ -89,7 +89,6 @@
             ".flatpak-builder",
             "third_party",
             "downloads",
-            ".qtcreator",
             "CMakeLists.txt.user"
           ]
         },

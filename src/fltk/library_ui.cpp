@@ -8,12 +8,12 @@
 #include <set>
 namespace pgjr
 {
-void Window::importQtWorkspace()
+void Window::importWorkspace()
 {
     Fl_Native_File_Chooser chooser;
-    chooser.title("Import former Qt workspace");
+    chooser.title("Import legacy workspace");
     chooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
-    chooser.filter("Qt workspace\t*.ini");
+    chooser.filter("Workspace\t*.ini");
     if (chooser.show())
         return;
     auto source = std::filesystem::u8path(chooser.filename());
@@ -24,9 +24,9 @@ void Window::importQtWorkspace()
         return;
     try
     {
-        auto state = readQtWorkspace(source);
+        auto state = readLegacyWorkspace(source);
         auto imported = state["profiles"].get<std::vector<Profile>>();
-        auto categories = readQtCategories(source.parent_path() / "queries/categories.ini");
+        auto categories = readLegacyCategories(source.parent_path() / "queries/categories.ini");
         save();
         std::map<std::string, std::string> ids;
         for (auto p : imported)

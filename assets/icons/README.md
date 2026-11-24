@@ -8,16 +8,16 @@ The full upstream licence is retained beside these files and deployed with the a
 Source: icons/{name}.svg in that commit. Only stroke colours have been changed
 for the toolbar; shapes and the original 24 by 24 view boxes are unchanged.
 Blue indicates query/file actions, amber opening files, purple profiles, green
-connect/run and red disconnect/stop. Disabled rendering uses the native Qt style.
+connect/run and red disconnect/stop. Disabled rendering uses the native FLTK style.
 
-The eight SVGs are embedded through assets/icons.qrc. There is no runtime download,
-JavaScript package or icon framework. Qt's SVG icon-engine plugin renders them.
+The SVGs are embedded through a generated C++ header and rendered by
+`Fl_SVG_Image`. Toolbar colors follow the active CSS theme.
 
 ## Application icon
 
 `pgadmin-jr.svg` is the application artwork supplied by Hans, separate from the
-Lucide toolbar set. Qt uses the derived ICO for Windows window/dialog/taskbar icons,
-avoiding SVG font rendering at startup; other platforms use the embedded SVG.
+Lucide toolbar set. The Windows executable uses the derived ICO; the application
+uses the embedded SVG for its window and About dialog.
 Linux packaging installs the SVG under the existing desktop application ID.
 
 `pgadmin-jr.ico` contains 16, 24, 32, 48, 64, 128 and 256 pixel images for the
@@ -37,7 +37,7 @@ py -3 tools/generate-app-icons.py --icns-only
 ```
 
 The Windows resource explicitly depends on the ICO so incremental builds refresh
-the executable icon as well as Qt's embedded icon resources.
+the executable icon.
 
 The generator uses Inkscape (or an explicit `--inkscape` path) and Python's standard
 library. Normal builds use the checked-in assets and need neither Inkscape nor

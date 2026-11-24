@@ -65,7 +65,7 @@ jobs:
       - name: Download PostgreSQL 18
         shell: pwsh
         run: python tools/fetch-postgresql.py
-      - name: Build Qt-free Release
+      - name: Build Release
         shell: cmd
         env:
           PGADM_RELEASE_VERSION: ${{ needs.version.outputs.version }}

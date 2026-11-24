@@ -44,11 +44,11 @@ std::string unescape(std::string text)
             while (i + 1 < text.size() && hex(text[i + 1]) >= 0)
             {
                 if (++digits > 2)
-                    throw std::runtime_error("Invalid Qt byte escape");
+                    throw std::runtime_error("Invalid legacy byte escape");
                 value = value * 16 + hex(text[++i]);
             }
             if (!digits)
-                throw std::runtime_error("Invalid Qt escape");
+                throw std::runtime_error("Invalid legacy escape");
             out += static_cast<char>(value);
         }
         else
@@ -106,7 +106,7 @@ std::map<std::string, std::string> ini(const std::filesystem::path &file)
 {
     auto text = readFile(file);
     if (text.size() > 64 * 1024 * 1024)
-        throw std::runtime_error("Qt workspace exceeds the 64 MiB import limit");
+        throw std::runtime_error("legacy workspace exceeds the 64 MiB import limit");
     std::istringstream lines(text);
     std::map<std::string, std::string> values;
     std::string line, group;
@@ -163,7 +163,7 @@ class Reader
     unsigned byte()
     {
         if (at_ >= data_.size())
-            throw std::runtime_error("Truncated Qt workspace value");
+            throw std::runtime_error("Truncated legacy workspace value");
         return static_cast<unsigned char>(data_[at_++]);
     }
     std::uint32_t integer()
@@ -179,7 +179,7 @@ class Reader
         if (size == 0xffffffffu)
             return {};
         if (size % 2 || size > data_.size() - at_)
-            throw std::runtime_error("Invalid Qt string length");
+            throw std::runtime_error("Invalid legacy string length");
         std::string out;
         auto end = at_ + size;
         while (at_ < end)
@@ -205,7 +205,7 @@ class Reader
     Json value(int depth = 0)
     {
         if (depth > 24)
-            throw std::runtime_error("Qt workspace nesting limit exceeded");
+            throw std::runtime_error("legacy workspace nesting limit exceeded");
         auto type = integer();
         if (type == 0)
         {
@@ -236,7 +236,7 @@ class Reader
         {
             auto count = integer();
             if (count > 10000)
-                throw std::runtime_error("Qt workspace collection limit exceeded");
+                throw std::runtime_error("legacy workspace collection limit exceeded");
             auto result = type == 8 ? Json::object() : Json::array();
             for (std::uint32_t i = 0; i < count; ++i)
             {
@@ -253,7 +253,7 @@ class Reader
             }
             return result;
         }
-        throw std::runtime_error("Unsupported Qt workspace value type: " + std::to_string(type));
+        throw std::runtime_error("Unsupported legacy workspace value type: " + std::to_string(type));
     }
     bool ended() const
     {
@@ -267,12 +267,12 @@ Json variant(const std::map<std::string, std::string> &values, const std::string
         return Json::array();
     const auto &text = found->second;
     if (text.compare(0, 9, "@Variant(") || text.back() != ')')
-        throw std::runtime_error("Expected Qt variant list: " + key);
+        throw std::runtime_error("Expected legacy variant list: " + key);
     auto bytes = text.substr(9, text.size() - 10);
     Reader reader(bytes);
     auto result = reader.value();
     if (!reader.ended() || !result.is_array())
-        throw std::runtime_error("Invalid Qt list: " + key);
+        throw std::runtime_error("Invalid legacy list: " + key);
     return result;
 }
 std::string string(const Json &value, const char *key, const std::string &fallback = {})
@@ -281,7 +281,7 @@ std::string string(const Json &value, const char *key, const std::string &fallba
     return found != value.end() && found->is_string() ? found->get<std::string>() : fallback;
 }
 } // namespace
-Json readQtWorkspace(const std::filesystem::path &file)
+Json readLegacyWorkspace(const std::filesystem::path &file)
 {
     auto values = ini(file);
     Json result = {{"profiles", Json::array()},
@@ -356,7 +356,7 @@ Json readQtWorkspace(const std::filesystem::path &file)
     }
     return result;
 }
-std::map<std::string, std::string> readQtCategories(const std::filesystem::path &file)
+std::map<std::string, std::string> readLegacyCategories(const std::filesystem::path &file)
 {
     std::map<std::string, std::string> out;
     if (!std::filesystem::exists(file))

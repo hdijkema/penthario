@@ -40,7 +40,7 @@ if (!$redist) { throw 'The MSVC release runtime is missing.' }
 $crt = Join-Path $redist.FullName 'x64/Microsoft.VC143.CRT'
 Copy-Item -Path (Join-Path $crt '*.dll') -Destination $application
 
-# Exercise the Qt-free application with development paths removed.
+# Exercise the staged application with development paths removed.
 $oldPath = $env:PATH
 $report = Join-Path $staging 'startup.txt'
 try {
@@ -53,6 +53,9 @@ try {
     if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $report)) { throw 'The staged application could not start.' }
     if ($Version -and !((Get-Content -LiteralPath $report) -contains "Application version: $Version")) {
         throw 'The packaged executable version does not match the requested release version. Rebuild first.'
+    }
+    if (!((Get-Content -LiteralPath $report) -contains 'Console window: none')) {
+        throw 'The Windows GUI application created a console window. Check the FLTK SDK build configuration.'
     }
     Get-Content -LiteralPath $report
 } finally {

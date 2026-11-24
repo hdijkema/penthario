@@ -1,0 +1,24 @@
+/* pgadmin-jr: light. Supported properties are documented in docs/THEMES.md. */
+* { color: #203040; background: #edf1f5; selection-color: #2274b8; border-color: #c1ccd8; font-family: sans-serif; font-size: 14px; }
+window, group, widget, label, menu, tabs, panel { background: #edf1f5; color: #203040; }
+button { background: #e0e8f0; color: #203040; border: 1px solid #c1ccd8; border-radius: 4px; }
+button:hover { background: #c8ddf0; }
+button:active { background: #dce6f0; }
+button:disabled { color: #687687; }
+input, tree, editor, display, table, cell { background: #ffffff; color: #203040; }
+editor, display { font-family: monospace; }
+header, panel { background: #dce6f0; color: #203040; }
+splitter { background: #c1ccd8; }
+scrollbar { background: #edf1f5; selection-color: #c1ccd8; }
+cell { border: 1px solid #c1ccd8; }
+cell.header { background: #dce6f0; font-weight: bold; }
+cell.section { background: #c5d7e9; font-weight: bold; }
+cell.status { background: #edf1f5; color: #687687; }
+cell.null { color: #687687; }
+syntax.keyword { color: #194ba0; font-weight: bold; }
+syntax.comment { color: #227b49; }
+syntax.string { color: #98461e; }
+icon.connect, icon.run { color: #25845c; }
+icon.profile { color: #7861b4; }
+icon.new { color: #2284cf; }
+icon.cancel { color: #c43e3e; }

@@ -32,17 +32,16 @@ class MacPackagingTest(unittest.TestCase):
             self.assertFalse((binaries / 'Lucide-LICENSE.txt').exists())
             self.assertFalse((binaries / 'keychain-LICENSE.txt').exists())
 
-    def test_qt_imports_are_rejected(self):
-        commands = 'cmd LC_LOAD_DYLIB\n cmdsize 88\n name @rpath/QtCore.framework/Versions/A/QtCore (offset 24)\n'
-        with self.assertRaisesRegex(ValueError, 'Qt dependency'):
-            check_dependencies(Path('pgadmin-jr'), commands)
+    def test_bundled_import_is_accepted(self):
+        commands = 'cmd LC_LOAD_DYLIB\n cmdsize 88\n name @rpath/libpq.5.dylib (offset 24)\n'
+        check_dependencies(Path('pgadmin-jr'), commands)
 
     def test_plugin_install_name_is_not_an_import(self):
         # A library ID describes itself, not an imported dependency.
-        check_dependencies(Path('libqcocoa.dylib'), '''Load command 0
+        check_dependencies(Path('libpgclient.dylib'), '''Load command 0
           cmd LC_ID_DYLIB
       cmdsize 184
-         name /Users/runner/build/image/pgadmin-jr.app/Contents/PlugIns/platforms/libqcocoa.dylib (offset 24)
+         name /Users/runner/build/image/pgadmin-jr.app/Contents/Frameworks/libpgclient.dylib (offset 24)
    time stamp 1 Thu Jan  1 00:00:01 1970
 Load command 1
           cmd LC_LOAD_DYLIB

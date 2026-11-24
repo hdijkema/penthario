@@ -1,12 +1,15 @@
 #include "result_table.h"
 #include "i18n.h"
 #include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 #include <algorithm>
+#include <cstdlib>
 
 namespace pgjr
 {
 ResultTable::ResultTable(int x, int y, int w, int h, FLTK_Css &css) : Fl_Table(x, y, w, h), css_(css)
 {
+    color(FL_BACKGROUND2_COLOR);
     cols(1);
     rows(0);
     col_width_all(200);
@@ -14,7 +17,8 @@ ResultTable::ResultTable(int x, int y, int w, int h, FLTK_Css &css) : Fl_Table(x
     row_height_all(27);
     row_header(0);
     col_header(1);
-    col_header_height(25);
+    col_header_height(28);
+    tooltip("Drag column-header borders to resize. Double-click a cell for details.");
     col_resize_min(40);
     when(FL_WHEN_RELEASE);
     end();
@@ -23,7 +27,8 @@ ResultTable::ResultTable(int x, int y, int w, int h, FLTK_Css &css) : Fl_Table(x
         [](Fl_Widget *widget, void *)
         {
             auto &table = *static_cast<ResultTable *>(widget);
-            if (table.callback_context() != CONTEXT_CELL || !Fl::event_clicks())
+            if (Fl::event() != FL_RELEASE || Fl::event_button() != FL_LEFT_MOUSE ||
+                table.callback_context() != CONTEXT_CELL || !Fl::event_clicks())
                 return;
             auto row = table.callback_row(), col = table.callback_col();
             if (row < 0 || col < 0 || static_cast<std::size_t>(row) >= table.rows_.size())
@@ -33,8 +38,78 @@ ResultTable::ResultTable(int x, int y, int w, int h, FLTK_Css &css) : Fl_Table(x
                 return;
             const auto &values = table.sections_[ref.section].rows[ref.row];
             if (static_cast<std::size_t>(col) < values.size() && table.inspect)
+            {
+                Fl::event_clicks(0);
                 table.inspect(values[col]);
+            }
         });
+}
+// FLTK's built-in header grip is only three pixels wide. Keep the visual border
+// thin, but accept an eight-pixel margin on either side for both hover and drag.
+int ResultTable::resizeColumnAt(int px, int py)
+{
+    if (!col_resize() || !col_header())
+        return -1;
+    int hx, hy, hw, hh;
+    get_bounds(CONTEXT_COL_HEADER, hx, hy, hw, hh);
+    if (px < hx || px >= hx + hw || py < hy || py >= hy + hh)
+        return -1;
+    int nearest = -1, distance = 9;
+    for (int col = std::max(0, leftcol - 1); col <= rightcol && col < cols(); ++col)
+    {
+        int x, y, w, h;
+        if (find_cell(CONTEXT_COL_HEADER, 0, col, x, y, w, h) < 0)
+            continue;
+        const int border = x + w;
+        const int delta = std::abs(px - border);
+        if (border >= hx && border < hx + hw && delta < distance)
+        {
+            nearest = col;
+            distance = delta;
+        }
+    }
+    return nearest;
+}
+int ResultTable::handle(int event)
+{
+    if (resizing_column_ >= 0)
+    {
+        if (event == FL_DRAG)
+        {
+            col_width(resizing_column_, std::clamp(resize_start_width_ + Fl::event_x() - resize_start_x_,
+                                                   col_resize_min(), 4096));
+            change_cursor(FL_CURSOR_WE);
+            if (window())
+                window()->cursor(FL_CURSOR_WE);
+            redraw();
+            return 1;
+        }
+        if (event == FL_RELEASE)
+        {
+            resizing_column_ = -1;
+            change_cursor(resizeColumnAt(Fl::event_x(), Fl::event_y()) >= 0 ? FL_CURSOR_WE
+                                                                            : FL_CURSOR_DEFAULT);
+            return 1;
+        }
+    }
+    if (event == FL_MOVE || event == FL_PUSH)
+    {
+        const int col = resizeColumnAt(Fl::event_x(), Fl::event_y());
+        if (col >= 0 && (event == FL_MOVE || Fl::event_button() == FL_LEFT_MOUSE))
+        {
+            change_cursor(FL_CURSOR_WE);
+            if (window())
+                window()->cursor(FL_CURSOR_WE);
+            if (event == FL_PUSH)
+            {
+                resizing_column_ = col;
+                resize_start_x_ = Fl::event_x();
+                resize_start_width_ = col_width(col);
+            }
+            return 1;
+        }
+    }
+    return Fl_Table::handle(event);
 }
 void ResultTable::clear(bool all)
 {
@@ -73,8 +148,9 @@ void ResultTable::rebuild()
     {
         const auto &section = sections_[i];
         columns = std::max(columns, static_cast<int>(section.columns.size()));
-        rows_.push_back({i, 0, Row::Title});
-        if (!section.columns.empty())
+        if (sections_.size() > 1)
+            rows_.push_back({i, 0, Row::Title});
+        if (sections_.size() > 1 && !section.columns.empty())
             rows_.push_back({i, 0, Row::Columns});
         for (std::size_t row = 0; row < section.rows.size(); ++row)
             rows_.push_back({i, row, Row::Data});
@@ -89,6 +165,16 @@ void ResultTable::rebuild()
     row_height_all(27);
     redraw();
 }
+std::string ResultTable::columnLabel(int col) const
+{
+    if (col < 0)
+        return {};
+    if (sections_.size() == 1)
+        return static_cast<std::size_t>(col) < sections_.front().columns.size()
+                   ? sections_.front().columns[col]
+                   : "";
+    return sections_.empty() ? "" : std::to_string(col + 1);
+}
 void ResultTable::draw_cell(TableContext context, int row, int col, int x, int y, int w, int h)
 {
     if (context == CONTEXT_COL_HEADER)
@@ -97,7 +183,7 @@ void ResultTable::draw_cell(TableContext context, int row, int col, int x, int y
         node.type = "cell";
         node.classes = {"header"};
         auto style = fltk_cell::cellStyle(css_, node);
-        fltk_cell::CellValue value = std::to_string(col + 1);
+        fltk_cell::CellValue value = columnLabel(col);
         text_.draw({{x, y, w, h}, value, style, {}});
         return;
     }

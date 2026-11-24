@@ -111,7 +111,7 @@ jobs:
         run: |
           python3 tools/prepare-flatpak.py --version "$PGADM_RELEASE_VERSION" \
             --output packaging/flatpak/build.json
-      - name: Build Qt-free Flatpak
+      - name: Build Flatpak
         run: |
           xvfb-run -a flatpak-builder --repo=build/flatpak-repo --disable-rofiles-fuse \
             --force-clean --default-branch=stable --arch=x86_64 --ccache \

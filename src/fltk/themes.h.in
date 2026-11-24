@@ -1,0 +1,4 @@
+#pragma once
+inline constexpr const char *lightCss = R"PGJRTHEME(@PGADM_THEME_LIGHT@)PGJRTHEME";
+inline constexpr const char *darkCss = R"PGJRTHEME(@PGADM_THEME_DARK@)PGJRTHEME";
+inline constexpr const char *classicCss = R"PGJRTHEME(@PGADM_THEME_CLASSIC@)PGJRTHEME";

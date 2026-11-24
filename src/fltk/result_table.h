@@ -19,10 +19,12 @@ class ResultTable : public Fl_Table
     }
     std::function<void(const Cell &)> inspect;
     std::string copyText() const;
+    std::string columnLabel(int) const;
     std::vector<int> widths();
     void widths(const std::vector<int> &);
 
   protected:
+    int handle(int) override;
     void draw_cell(TableContext, int, int, int, int, int, int) override;
 
   private:
@@ -37,6 +39,8 @@ class ResultTable : public Fl_Table
             Status
         } kind;
     };
+    int resizeColumnAt(int, int);
+    int resizing_column_ = -1, resize_start_x_ = 0, resize_start_width_ = 0;
     void rebuild();
     FLTK_Css &css_;
     std::vector<Section> sections_;

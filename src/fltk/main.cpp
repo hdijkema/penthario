@@ -6,6 +6,9 @@
 #include <chrono>
 #include <algorithm>
 #include <FL/fl_ask.H>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main(int argc, char **argv)
 {
@@ -51,12 +54,6 @@ int main(int argc, char **argv)
         pgjr::language(requested_language.empty() ? locale : requested_language);
         Fl::lock();
         FLTK_Css css;
-        css.parse("window, group { background: #edf1f5; color: #203040; font-size: 14px; } button { "
-                  "background: #e0e8f0; color: #203040; border: 1px solid #a0b0c0; border-radius: 4px; } "
-                  "button:hover { background: #c8ddf0; } cell { background: #ffffff; color: #203040; border: "
-                  "1px solid #d8e0e8; font-size: 14px; } cell.header { background: #dce6f0; font-weight: "
-                  "bold; } cell.section { background: #c5d7e9; font-weight: bold; } cell.status { "
-                  "background: #f0f3f6; color: #526070; } cell.null { color: #7a8590; }");
         pgjr::Window window(css, settings, smoke);
         Fl_SVG_Image svg(nullptr, appSvg);
         std::unique_ptr<Fl_Image> image(svg.copy(64, 64));
@@ -73,13 +70,17 @@ int main(int argc, char **argv)
         window.show();
         if (smoke)
         {
+            std::string diagnostics;
+#ifdef _WIN32
+            diagnostics = std::string("Console window: ") + (GetConsoleWindow() ? "present" : "none") + "\n";
+#endif
             if (!report.empty())
                 pgjr::writeFile(report,
                                 std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
                                                    std::chrono::steady_clock::now() - started)
                                                    .count()) +
                                     " ms to window construction\nApplication version: " + PGADM_APP_VERSION +
-                                    "\nToolkit: FLTK (no Qt)\nLanguage: " + pgjr::language() + "\n");
+                                    "\nToolkit: FLTK\nLanguage: " + pgjr::language() + "\n" + diagnostics);
             Fl::add_timeout(0.2, [](void *p) { static_cast<pgjr::Window *>(p)->hide(); }, &window);
         }
         return Fl::run();

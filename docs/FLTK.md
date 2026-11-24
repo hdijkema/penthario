@@ -2,9 +2,7 @@
 
 The default build is a native C++17/FLTK application. It uses fltk-css for
 styling, fltk-cell for table rendering, STL data structures, libpq for database
-sessions and a small libxlsxwriter wrapper for XLSX output. There is no Qt
-runtime dependency. Historical Qt sources are retained only for reference and
-an explicit `PGADM_BUILD_QT_LEGACY=ON` build.
+sessions and a small libxlsxwriter wrapper for XLSX output.
 
 ## Available functionality
 
@@ -47,9 +45,9 @@ The native workspace uses JSON, keeping the preview frontend's location:
 - Linux: `$XDG_CONFIG_HOME/pgadmin-jr-fltk/settings.json`, falling back to
   `~/.config/pgadmin-jr-fltk/settings.json`.
 
-Use the import command to read an existing Qt workspace INI and its saved query
+Use the import command to read an legacy workspace INI and its saved query
 library. Original files are retained; conflicting named queries are skipped.
-Profile passwords are not copied from QtKeychain. Enter them again and select
+Profile passwords are not imported. Enter them again and select
 Remember password to save them in the native operating-system vault. Passwords
 are excluded from JSON. Importing/restoring tabs never executes saved SQL.
 

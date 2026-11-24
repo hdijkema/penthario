@@ -60,7 +60,6 @@ Name: "{autodesktop}\{#InstallerName}"; Filename: "{app}\pgadmin-jr.exe"; Workin
 #ifdef UpgradeLegacyProduct
 [InstallDelete]
 ; Remove superseded program files/shortcuts only; user SQL and settings are retained.
-Type: files; Name: "{app}\pgadmin_qt.exe"
 Type: files; Name: "{autoprograms}\alt-pg-admin.lnk"
 Type: files; Name: "{autodesktop}\alt-pg-admin.lnk"
 #endif

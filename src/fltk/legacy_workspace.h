@@ -3,8 +3,8 @@
 #include <map>
 namespace pgjr
 {
-// Read only the Qt 4.0 QDataStream subset written by QSettings for our former workspace.
-// This reader has no Qt dependency and never reads or modifies credential stores.
-Json readQtWorkspace(const std::filesystem::path &);
-std::map<std::string, std::string> readQtCategories(const std::filesystem::path &);
+// Bounded, read-only import of the former INI workspace and its binary value stream.
+// Credential stores are never read or modified.
+Json readLegacyWorkspace(const std::filesystem::path &);
+std::map<std::string, std::string> readLegacyCategories(const std::filesystem::path &);
 } // namespace pgjr

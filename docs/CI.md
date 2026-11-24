@@ -2,7 +2,7 @@
 
 The main `.github/workflows/build.yml` builds the native FLTK application in
 Release mode. Windows uses MSVC, Debian uses GCC, and macOS uses Apple Clang.
-No workflow installs Qt. Dependencies and the first source-release order are in
+Native build dependencies and the first source-release order are in
 [DEPENDENCIES.md](DEPENDENCIES.md). Publish fltk-css v0.1.0 and then fltk-cell
 v0.1.0 before expecting a clean application build to fetch them.
 

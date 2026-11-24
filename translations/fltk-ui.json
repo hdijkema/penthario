@@ -31,6 +31,10 @@
     "nl": "Databasenaam",
     "de": "Datenbankname"
   },
+  "Format": {
+    "nl": "Formaat",
+    "de": "Format"
+  },
   "Close": {
     "nl": "Sluiten",
     "de": "Schließen"
@@ -531,10 +535,6 @@
     "nl": "Profiel verwijderen...",
     "de": "Profil entfernen..."
   },
-  "Import Qt workspace...": {
-    "nl": "Qt-werkruimte importeren...",
-    "de": "Qt-Arbeitsbereich importieren..."
-  },
   "Connection timeout (seconds)": {
     "nl": "Verbindingstime-out (seconden)",
     "de": "Verbindungszeitlimit (Sekunden)"
@@ -558,5 +558,113 @@
   "Reset layout": {
     "nl": "Indeling herstellen",
     "de": "Anordnung zurücksetzen"
+  },
+  "Edit": {
+    "nl": "Bewerken",
+    "de": "Bearbeiten"
+  },
+  "Import": {
+    "nl": "Importeren",
+    "de": "Importieren"
+  },
+  "Workspace...": {
+    "nl": "Werkruimte...",
+    "de": "Arbeitsbereich..."
+  },
+  "Saved queries": {
+    "nl": "Opgeslagen queries",
+    "de": "Gespeicherte Abfragen"
+  },
+  "Open...": {
+    "nl": "Openen...",
+    "de": "Öffnen..."
+  },
+  "Save...": {
+    "nl": "Opslaan...",
+    "de": "Speichern..."
+  },
+  "Manage...": {
+    "nl": "Beheren...",
+    "de": "Verwalten..."
+  },
+  "Maintenance": {
+    "nl": "Onderhoud",
+    "de": "Wartung"
+  },
+  "Execution plan output format": {
+    "nl": "Uitvoerformaat voor het uitvoeringsplan",
+    "de": "Ausgabeformat des Ausführungsplans"
+  },
+  "New query (Ctrl+N)": {
+    "nl": "Nieuwe query (Ctrl+N)",
+    "de": "Neue Abfrage (Strg+N)"
+  },
+  "Run selection or script (F5)": {
+    "nl": "Selectie of script uitvoeren (F5)",
+    "de": "Auswahl oder Skript ausführen (F5)"
+  },
+  "Cancel query": {
+    "nl": "Query annuleren",
+    "de": "Abfrage abbrechen"
+  },
+  "Drag to resize editor and results. Double-click to reset.": {
+    "nl": "Sleep om de editor en resultaten te verdelen. Dubbelklik om te herstellen.",
+    "de": "Ziehen, um Editor und Ergebnisse aufzuteilen. Doppelklick zum Zurücksetzen."
+  },
+  "Drag column-header borders to resize. Double-click a cell for details.": {
+    "nl": "Sleep de grens tussen kolomkoppen om de breedte te wijzigen. Dubbelklik op een cel voor details.",
+    "de": "Spaltenkopfgrenzen ziehen, um die Breite zu ändern. Doppelklick auf eine Zelle zeigt Details."
+  },
+  "Include buffer usage statistics": {
+    "nl": "Buffergebruik tonen",
+    "de": "Puffernutzungsstatistik anzeigen"
+  },
+  "Include additional plan details": {
+    "nl": "Extra plandetails tonen",
+    "de": "Zusätzliche Plandetails anzeigen"
+  },
+  "Show planner cost estimates": {
+    "nl": "Kostenramingen van de planner tonen",
+    "de": "Kostenschätzungen des Planers anzeigen"
+  },
+  "Measure per-node execution time with ANALYZE": {
+    "nl": "Uitvoeringstijd per stap meten met ANALYZE",
+    "de": "Ausführungszeit je Knoten mit ANALYZE messen"
+  },
+  "Theme": {
+    "nl": "Thema",
+    "de": "Design"
+  },
+  "Light": {
+    "nl": "Licht",
+    "de": "Hell"
+  },
+  "Dark": {
+    "nl": "Donker",
+    "de": "Dunkel"
+  },
+  "Classic": {
+    "nl": "Klassiek",
+    "de": "Klassisch"
+  },
+  "Load CSS...": {
+    "nl": "CSS laden...",
+    "de": "CSS laden..."
+  },
+  "Reload CSS": {
+    "nl": "CSS herladen",
+    "de": "CSS neu laden"
+  },
+  "Save stylesheet...": {
+    "nl": "Stylesheet opslaan...",
+    "de": "Stylesheet speichern..."
+  },
+  "Load stylesheet": {
+    "nl": "Stylesheet laden",
+    "de": "Stylesheet laden"
+  },
+  "Save stylesheet": {
+    "nl": "Stylesheet opslaan",
+    "de": "Stylesheet speichern"
   }
 }

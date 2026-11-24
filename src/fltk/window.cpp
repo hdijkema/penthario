@@ -1,5 +1,7 @@
 #include "window.h"
 #include "assets.h"
+#include "widgets.h"
+#include <FL/Fl_Tooltip.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/Fl_SVG_Image.H>
@@ -44,10 +46,6 @@ void error(const std::exception &ex)
 {
     fl_alert("%s", ex.what());
 }
-Fl_Text_Display::Style_Table_Entry styleTable[] = {{FL_BLACK, FL_COURIER, 14},
-                                                   {fl_rgb_color(25, 75, 160), FL_COURIER_BOLD, 14},
-                                                   {fl_rgb_color(30, 130, 70), FL_COURIER, 14},
-                                                   {fl_rgb_color(150, 70, 30), FL_COURIER, 14}};
 } // namespace
 
 QueryTab::QueryTab(Window &owner, FLTK_Css &css, int x, int y, int w, int h)
@@ -57,7 +55,15 @@ QueryTab::QueryTab(Window &owner, FLTK_Css &css, int x, int y, int w, int h)
     target->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     editor = new SqlEditor(x, y + 30, w, h / 2 - 30);
     editor->buffer(&sql);
-    editor->highlight_data(&styles, styleTable, 4, 'A', nullptr, nullptr);
+    syntax_ = {{{FL_FOREGROUND_COLOR, FL_COURIER, 14},
+                {FL_BLUE, FL_COURIER_BOLD, 14},
+                {FL_GREEN, FL_COURIER, 14},
+                {FL_RED, FL_COURIER, 14}}};
+    editor->highlight_data(&styles, syntax_.data(), 4, 'A', nullptr, nullptr);
+    splitter = new Fl_Box(x, y + h / 2 - 3, w, 6);
+    splitter->box(FL_FLAT_BOX);
+    splitter->color(fl_rgb_color(185, 195, 205));
+    splitter->tooltip("Drag to resize editor and results. Double-click to reset.");
     output = new fltk_dock::Tabs(x, y + h / 2, w, h / 2);
     result_panel = new Fl_Group(x, y + h / 2 + 25, w, h / 2 - 25, "Results");
     all = new Fl_Check_Button(x + 5, y + h / 2 + 30, 180, 25, "Intermediate results");
@@ -83,12 +89,28 @@ QueryTab::QueryTab(Window &owner, FLTK_Css &css, int x, int y, int w, int h)
     format = new Fl_Choice(x + 490, y + h / 2 + 28, 110, 26);
     format->add("TEXT|JSON|XML|YAML");
     format->value(0);
+    timing->deactivate();
+    analyze->callback(
+        [](Fl_Widget *widget, void *data)
+        {
+            auto *timing = static_cast<Fl_Check_Button *>(data);
+            if (static_cast<Fl_Check_Button *>(widget)->value())
+                timing->activate();
+            else
+                timing->deactivate();
+        },
+        timing);
+    buffers->tooltip("Include buffer usage statistics");
+    verbose->tooltip("Include additional plan details");
+    costs->tooltip("Show planner cost estimates");
+    timing->tooltip("Measure per-node execution time with ANALYZE");
     plan_view = new Fl_Text_Display(x, y + h / 2 + 60, w, h / 2 - 60);
     plan_view->buffer(&plan);
     plan_view->textfont(FL_COURIER);
     plan_panel->end();
     output->end();
     end();
+    resize(x, y, w, h);
     sql.add_modify_callback(
         [](int, int inserted, int deleted, int, const char *, void *owner)
         {
@@ -110,6 +132,21 @@ QueryTab::~QueryTab()
     plan_view->buffer(nullptr);
     clear(); // Child widgets must die before their member text buffers.
 }
+void QueryTab::applyTheme(const Theme &theme)
+{
+    theme.apply(*this);
+    theme.apply(*target, "header");
+    theme.apply(*splitter, "splitter");
+    const auto editor_style = theme.style("editor");
+    syntax_[0] = {editor_style.color, FL_COURIER, editor_style.font_size};
+    const char *classes[] = {"keyword", "comment", "string"};
+    for (int i = 0; i < 3; ++i)
+    {
+        const auto style = theme.style("syntax", {classes[i]});
+        syntax_[i + 1] = {style.color, i == 0 ? FL_COURIER_BOLD : FL_COURIER, editor_style.font_size};
+    }
+    editor->redisplay_range(0, sql.length());
+}
 void QueryTab::rename(std::string value)
 {
     name = std::move(value);
@@ -130,38 +167,94 @@ void QueryTab::log(const std::string &value)
     message_view->insert_position(messages.length());
     message_view->show_insert_position();
 }
+void QueryTab::splitRatio(double value)
+{
+    split_ratio_ = std::clamp(value, 0.15, 0.85);
+    resize(x(), y(), w(), h());
+    redraw();
+}
+int QueryTab::handle(int event)
+{
+    const bool on_splitter = Fl::event_y() >= splitter->y() && Fl::event_y() < splitter->y() + splitter->h();
+    if (event == FL_PUSH && Fl::event_button() == FL_LEFT_MOUSE && on_splitter)
+    {
+        if (Fl::event_clicks())
+        {
+            splitRatio(0.45);
+            return 1;
+        }
+        splitting_ = true;
+        return 1;
+    }
+    if (event == FL_DRAG && splitting_)
+    {
+        splitRatio(static_cast<double>(Fl::event_y() - y() - 30) / std::max(1, h() - 30));
+        return 1;
+    }
+    if (event == FL_RELEASE && splitting_)
+    {
+        splitting_ = false;
+        return 1;
+    }
+    if (event == FL_MOVE && on_splitter)
+    {
+        splitter_hover_ = true;
+        if (window())
+            window()->cursor(FL_CURSOR_NS);
+        return 1;
+    }
+    if ((event == FL_MOVE || event == FL_LEAVE) && splitter_hover_)
+    {
+        splitter_hover_ = false;
+        if (window())
+            window()->cursor(FL_CURSOR_DEFAULT);
+    }
+    return Fl_Group::handle(event);
+}
 void QueryTab::resize(int x, int y, int w, int h)
 {
-    Fl_Group::resize(x, y, w, h);
-    int middle = y + std::max(120, h * 45 / 100);
-    target->resize(x + 6, y + 2, w - 12, 26);
-    editor->resize(x, y + 30, w, middle - y - 34);
-    output->resize(x, middle, w, y + h - middle);
-    for (auto *group : {result_panel, message_panel, plan_panel})
-        group->resize(x, middle + 30, w, y + h - middle - 30);
-    all->resize(x + 5, middle + 33, 190, 26);
-    result->resize(x, middle + 62, w, y + h - middle - 62);
-    message_view->resize(x, middle + 31, w, y + h - middle - 31);
-    analyze->resize(x, middle + 28, 105, 26);
-    buffers->resize(x + 105, middle + 28, 100, 26);
-    verbose->resize(x + 205, middle + 28, 100, 26);
-    costs->resize(x + 305, middle + 28, 85, 26);
-    timing->resize(x + 390, middle + 28, 95, 26);
-    if (w < 610)
+    Fl_Widget::resize(x, y, w, h);
+    const int body = std::max(1, h - 30);
+    const int max_editor = std::max(1, body - std::min(150, body * 2 / 3));
+    const int editor_height =
+        std::clamp(static_cast<int>(body * split_ratio_), std::min(80, max_editor), max_editor);
+    const int middle = y + 30 + editor_height;
+    target->resize(x + 6, y + 2, std::max(1, w - 12), 26);
+    editor->resize(x, y + 30, w, editor_height);
+    splitter->resize(x, middle, w, 6);
+    const int output_y = middle + 6, output_h = std::max(1, y + h - output_y);
+    output->resize(x, output_y, w, output_h);
+    // Use the actual page rectangle reserved by Tabs, keeping controls below its 30px strip.
+    const int px = plan_panel->x(), py = plan_panel->y(), pw = plan_panel->w(), ph = plan_panel->h();
+    all->resize(result_panel->x() + 8, result_panel->y() + 4, std::max(1, result_panel->w() - 16), 28);
+    result->resize(result_panel->x(), result_panel->y() + 36, result_panel->w(),
+                   std::max(1, result_panel->h() - 36));
+    message_view->resize(message_panel->x(), message_panel->y(), message_panel->w(), message_panel->h());
+    int left = px + 8, top = py + 8;
+    for (auto *option : {analyze, buffers, verbose, costs, timing})
     {
-        analyze->resize(x, middle + 28, 95, 26);
-        buffers->resize(x + 95, middle + 28, 95, 26);
-        verbose->resize(x + 190, middle + 28, 95, 26);
-        costs->resize(x + 285, middle + 28, 85, 26);
-        timing->resize(x + 370, middle + 28, 95, 26);
-        format->resize(x, middle + 56, 110, 26);
-        plan_view->resize(x, middle + 86, w, y + h - middle - 86);
+        const int width = option == costs ? 90 : 108;
+        if (left + width > px + pw - 8 && left > px + 8)
+        {
+            left = px + 8;
+            top += 32;
+        }
+        option->resize(left, top, width, 28);
+        option->labelsize(13);
+        left += width + 4;
     }
-    else
+    if (left + 154 > px + pw - 8 && left > px + 8)
     {
-        format->resize(x + 490, middle + 28, 110, 26);
-        plan_view->resize(x, middle + 58, w, y + h - middle - 58);
+        left = px + 8;
+        top += 32;
     }
+    format->resize(left + 48, top, 100, 28);
+    format->copy_label(tr("Format"));
+    format->labelsize(13);
+    format->tooltip(tr("Execution plan output format"));
+    const int content_y = top + 36;
+    plan_view->resize(px, content_y, pw, std::max(1, py + ph - content_y));
+    init_sizes();
 }
 // Style SQL byte ranges without changing the original UTF-8 buffer or undo history.
 void QueryTab::highlight()
@@ -239,127 +332,197 @@ void QueryTab::highlight()
 }
 
 Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
-    : Fl_Css_Window(stylesheet, 100, 100, 1440, 820, "pgadmin-jr"), css(stylesheet),
+    : Fl_Css_Window(stylesheet, 100, 100, 1440, 820, "pgadmin-jr"), css(stylesheet), theme_(stylesheet),
       settings_(std::move(settings)), smoke_(smoke)
 {
     menu_ = new Fl_Menu_Bar(0, 0, w(), 28);
-    auto action = [this](const char *name, int shortcut, Fl_Callback *callback)
-    { menu_->add(name, shortcut, callback, this); };
+    auto action = [this](const char *name, int shortcut, Fl_Callback *callback, int flags = 0)
+    { return menu_->add(name, shortcut, callback, this, flags); };
     action("File/New query", FL_CTRL + 'n',
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->newQuery(); });
-    action("File/Open SQL...", FL_CTRL + 'o',
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->openSql(); });
-    action("File/Import Qt workspace...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->importQtWorkspace(); });
-    action("File/Save SQL...", FL_CTRL + 's',
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->saveSql(); });
-    action("File/Save named query...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->saveNamed(); });
-    action("File/Open named query...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->openNamed(); });
-    action("File/Refresh saved queries", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshLibrary(); });
-    action("File/Rename tab...", FL_F + 2,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->renameQuery(); });
-    action("File/Close tab", FL_CTRL + 'w',
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->closeQuery(); });
+    action(
+        "File/Open SQL...", FL_CTRL + 'o', [](Fl_Widget *, void *p) { static_cast<Window *>(p)->openSql(); },
+        FL_MENU_DIVIDER);
+    action(
+        "File/Save SQL...", FL_CTRL + 's', [](Fl_Widget *, void *p) { static_cast<Window *>(p)->saveSql(); },
+        FL_MENU_DIVIDER);
+    action(
+        "File/Import/Workspace...", 0,
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->importWorkspace(); }, FL_MENU_DIVIDER);
+    action(
+        "File/Close tab", FL_CTRL + 'w', [](Fl_Widget *, void *p) { static_cast<Window *>(p)->closeQuery(); },
+        FL_MENU_DIVIDER);
     action("File/Exit", FL_ALT + FL_F + 4, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->exit(); });
-    action("Connection/New profile...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->editProfile(); });
-    action("Connection/Connect", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->connectProfile(); });
-    action("Connection/Edit profile...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->editSelectedProfile(); });
-    action("Connection/Disconnect", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->disconnect(); });
-    action("Connection/Remove profile...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->deleteProfile(); });
-    action("Connection/Use selected database for this tab", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->useSelectedDatabase(); });
-    action("Database/Backup...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(0); });
-    action("Database/Restore...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(1); });
-    action("Database/Create...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(2); });
-    action("Database/Drop...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(3); });
-    action("Database/VACUUM...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(4); });
-    action("Database/ANALYZE...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(5); });
-    action("Database/REINDEX...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(6); });
-    action("Database/Server roles and privileges...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->manageRoles(); });
-    action("Database/Inspect object", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->inspectObject(); });
-    action("Database/Refresh browser", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshCatalog(); });
-    action("Query/Run selection or script", FL_F + 5,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(); });
-    action("Query/Cancel", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->cancelQuery(); });
-    action("Query/Find...", FL_CTRL + 'f', [](Fl_Widget *, void *p) { static_cast<Window *>(p)->find(); });
-    action("Query/Find and replace...", FL_CTRL + 'h',
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->searchReplace(); });
-    action("Query/Complete", FL_CTRL + ' ',
+    action("Edit/Find...", FL_CTRL + 'f', [](Fl_Widget *, void *p) { static_cast<Window *>(p)->find(); });
+    action(
+        "Edit/Find and replace...", FL_CTRL + 'h',
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->searchReplace(); }, FL_MENU_DIVIDER);
+    action("Edit/Complete", FL_CTRL + ' ',
            [](Fl_Widget *, void *p)
            {
                auto *t = static_cast<Window *>(p)->current();
                if (t)
                    t->editor->complete();
            });
-    action("Query/Toggle line comment", FL_CTRL + '/',
+    action("Edit/Toggle line comment", FL_CTRL + '/',
            [](Fl_Widget *, void *p)
            {
                auto *t = static_cast<Window *>(p)->current();
                if (t)
                    t->editor->toggleComment();
            });
-    action("File/Manage saved query...", 0,
+    action("Query/Run selection or script", FL_F + 5,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(); });
+    action(
+        "Query/Cancel", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->cancelQuery(); },
+        FL_MENU_DIVIDER);
+    action("Query/Saved queries/Open...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->openNamed(); });
+    action(
+        "Query/Saved queries/Save...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->saveNamed(); },
+        FL_MENU_DIVIDER);
+    action("Query/Saved queries/Manage...", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->libraryAction(); });
-    action("Results/Copy all", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->copyAll(); });
+    action("Query/Saved queries/Refresh", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshLibrary(); });
+    action("Query/Rename tab...", FL_F + 2,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->renameQuery(); });
+    action(
+        "Results/Copy all", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->copyAll(); },
+        FL_MENU_DIVIDER);
     action("Results/Save preview as CSV...", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->exportCsv(); });
-    action("Results/Save preview as XLSX...", 0,
-           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->exportExcel(); });
+    action(
+        "Results/Save preview as XLSX...", 0,
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->exportExcel(); }, FL_MENU_DIVIDER);
     action("Results/Execute to full CSV...", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(true); });
     action("Results/Execute to full XLSX...", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(true, true); });
-    action("Help/About", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->about(); });
-    action("Language/Nederlands", 0,
+    action("Connection/Connect", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->connectProfile(); });
+    action(
+        "Connection/Disconnect", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->disconnect(); },
+        FL_MENU_DIVIDER);
+    action("Connection/New profile...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->editProfile(); });
+    action("Connection/Edit profile...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->editSelectedProfile(); });
+    action(
+        "Connection/Remove profile...", 0,
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->deleteProfile(); }, FL_MENU_DIVIDER);
+    action("Connection/Use selected database for this tab", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->useSelectedDatabase(); });
+    action(
+        "Database/Create...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(2); },
+        FL_MENU_DIVIDER);
+    action("Database/Backup...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(0); });
+    action(
+        "Database/Restore...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(1); },
+        FL_MENU_DIVIDER);
+    action("Database/Maintenance/VACUUM...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(4); });
+    action("Database/Maintenance/ANALYZE...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(5); });
+    action("Database/Maintenance/REINDEX...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(6); });
+    action(
+        "Database/Server roles and privileges...", 0,
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->manageRoles(); }, FL_MENU_DIVIDER);
+    action("Database/Inspect object", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->inspectObject(); });
+    action(
+        "Database/Refresh browser", 0,
+        [](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshCatalog(); }, FL_MENU_DIVIDER);
+    action("Database/Drop...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(3); });
+    action("View/Database browser", 0,
+           [](Fl_Widget *, void *p)
+           {
+               auto &app = *static_cast<Window *>(p);
+               app.dock_->open(*app.browser_panel_);
+           });
+    action("View/Query library", 0,
+           [](Fl_Widget *, void *p)
+           {
+               auto &app = *static_cast<Window *>(p);
+               app.dock_->open(*app.library_panel_);
+           });
+    action(
+        "View/History", 0,
+        [](Fl_Widget *, void *p)
+        {
+            auto &app = *static_cast<Window *>(p);
+            app.dock_->open(*app.history_panel_);
+        },
+        FL_MENU_DIVIDER);
+    action(
+        "View/Reset layout", 0,
+        [](Fl_Widget *, void *p)
+        {
+            auto &app = *static_cast<Window *>(p);
+            app.dock_->dock(*app.browser_panel_, fltk_dock::Side::Left);
+            app.dock_->dock(*app.library_panel_, fltk_dock::Side::Right);
+            app.dock_->tabify(*app.history_panel_, *app.library_panel_);
+        },
+        FL_MENU_DIVIDER);
+    theme_actions_[0] = action(
+        "View/Theme/Light", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeTheme("light"); },
+        FL_MENU_RADIO);
+    theme_actions_[1] = action(
+        "View/Theme/Dark", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeTheme("dark"); },
+        FL_MENU_RADIO);
+    theme_actions_[2] = action(
+        "View/Theme/Classic", 0, [](Fl_Widget *, void *p)
+        { static_cast<Window *>(p)->changeTheme("classic"); }, FL_MENU_RADIO | FL_MENU_DIVIDER);
+    action("View/Theme/Load CSS...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->loadThemeCss(); });
+    action("View/Theme/Reload CSS", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->reloadThemeCss(); });
+    action("View/Theme/Save stylesheet...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->saveThemeCss(); });
+    action("View/Language/Nederlands", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeLanguage("nl"); });
-    action("Language/English", 0,
+    action("View/Language/English", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeLanguage("en"); });
-    action("Language/Deutsch", 0,
+    action("View/Language/Deutsch", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeLanguage("de"); });
-    connect_ = new Fl_Css_Button(css, 8, 35, 100, 30, "Connect");
+    action("Help/About", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->about(); });
+    connect_ = new Fl_Css_Button(css, 8, 34, 34, 34);
     connect_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->connectProfile(); }, this);
-    auto *profileButton = new Fl_Css_Button(css, 115, 35, 100, 30, "New profile");
+    auto *profileButton = new Fl_Css_Button(css, 46, 34, 34, 34);
     profileButton->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->editProfile(); }, this);
-    auto *newButton = new Fl_Css_Button(css, 222, 35, 100, 30, "New query");
+    auto *newButton = new Fl_Css_Button(css, 98, 34, 34, 34);
     newButton->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->newQuery(); }, this);
-    run_ = new Fl_Css_Button(css, 329, 35, 110, 30, "Run (F5)");
+    run_ = new Fl_Css_Button(css, 150, 34, 34, 34);
     run_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(); }, this);
-    cancel_ = new Fl_Css_Button(css, 446, 35, 90, 30, "Cancel");
+    cancel_ = new Fl_Css_Button(css, 188, 34, 34, 34);
     cancel_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->cancelQuery(); }, this);
-    auto icon = [this](Fl_Button *button, const char *source)
+    tool_buttons_ = {connect_, profileButton, newButton, run_, cancel_};
+    connect_->tooltip("Connect");
+    profileButton->tooltip("New profile");
+    newButton->tooltip("New query (Ctrl+N)");
+    run_->tooltip("Run selection or script (F5)");
+    cancel_->tooltip("Cancel query");
+    Fl_Tooltip::delay(0.4f);
+    Fl_Tooltip::hoverdelay(0.1f);
+    for (int at : {88, 140})
     {
-        Fl_SVG_Image svg(nullptr, source);
-        icons_.emplace_back(svg.copy(18, 18));
-        button->image(icons_.back().get());
-        button->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_IMAGE_NEXT_TO_TEXT);
-    };
-    icon(connect_, connectSvg);
-    icon(profileButton, profileSvg);
-    icon(newButton, newSvg);
-    icon(run_, runSvg);
-    icon(cancel_, cancelSvg);
+        auto *separator = new Fl_Box(at, 39, 1, 24);
+        separator->box(FL_FLAT_BOX);
+        separator->color(fl_rgb_color(170, 180, 190));
+    }
     dock_ = new fltk_dock::Host(8, 74, w() - 16, h() - 104);
-    tree_ = new Fl_Tree(8, 74, 260, h() - 104);
+    tree_ = new ContextTree(8, 74, 260, h() - 104);
     tree_->showroot(0);
     tree_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->treeClick(); }, this);
     tabs_ = new fltk_dock::Tabs(278, 74, w() - 526, h() - 104);
     tabs_->end();
-    auto *library = new Fl_Group(w() - 236, 101, 226, h() - 132, "Queries");
+    auto *library = new Fl_Group(w() - 236, 101, 226, h() - 132);
     library_filter_ = new Fl_Input(w() - 230, 108, 214, 27);
     library_filter_->tooltip("Filter saved queries");
     library_filter_->when(FL_WHEN_CHANGED);
     library_filter_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshLibrary(false); },
                               this);
-    library_tree_ = new Fl_Tree(w() - 234, 141, 222, h() - 175);
+    library_tree_ = new ContextTree(w() - 234, 141, 222, h() - 175);
     library_tree_->showroot(0);
     library_tree_->callback(
         [](Fl_Widget *, void *p)
@@ -373,8 +536,8 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
         this);
     library->end();
     library->resizable(library_tree_);
-    auto *history = new Fl_Group(w() - 236, 101, 226, h() - 132, "History");
-    history_tree_ = new Fl_Tree(w() - 234, 108, 222, h() - 142);
+    auto *history = new Fl_Group(w() - 236, 101, 226, h() - 132);
+    history_tree_ = new ContextTree(w() - 234, 108, 222, h() - 142);
     history_tree_->showroot(0);
     history_tree_->callback(
         [](Fl_Widget *, void *p)
@@ -400,28 +563,6 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
     history_panel_ = &dock_->add_panel("history", "History", *history, fltk_dock::Side::Right, 260);
     dock_->tabify(*history_panel_, *library_panel_);
     static_cast<fltk_dock::Tabs *>(library_panel_->parent())->value(library_panel_);
-    action("View/Database browser", 0, [](Fl_Widget *, void *p)
-    {
-        auto &app = *static_cast<Window *>(p);
-        app.dock_->open(*app.browser_panel_);
-    });
-    action("View/Query library", 0, [](Fl_Widget *, void *p)
-    {
-        auto &app = *static_cast<Window *>(p);
-        app.dock_->open(*app.library_panel_);
-    });
-    action("View/History", 0, [](Fl_Widget *, void *p)
-    {
-        auto &app = *static_cast<Window *>(p);
-        app.dock_->open(*app.history_panel_);
-    });
-    action("View/Reset layout", 0, [](Fl_Widget *, void *p)
-    {
-        auto &app = *static_cast<Window *>(p);
-        app.dock_->dock(*app.browser_panel_, fltk_dock::Side::Left);
-        app.dock_->dock(*app.library_panel_, fltk_dock::Side::Right);
-        app.dock_->tabify(*app.history_panel_, *app.library_panel_);
-    });
     status_ = new Fl_Box(8, h() - 26, w() - 16, 22, "Ready - no network connections at startup");
     status_->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     end();
@@ -439,6 +580,7 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
         newQuery();
     refreshLibrary();
     localize(*this);
+    applyTheme();
     Fl::add_timeout(0.05, tick, this);
 }
 Window::~Window()
@@ -453,6 +595,105 @@ void Window::resize(int x, int y, int w, int h)
     menu_->resize(0, 0, w, 28);
     dock_->resize(8, 74, w - 16, h - 104);
     status_->resize(8, h - 26, w - 16, 22);
+}
+void Window::applyTheme()
+{
+    theme_.apply(*this);
+    // Floating dock windows are native siblings, not physical children of the main window.
+    for (auto *window = Fl::first_window(); window; window = Fl::next_window(window))
+        if (window != this)
+            theme_.apply(*window);
+    for (auto &tab : queries_)
+        tab->applyTheme(theme_);
+    const char *names[] = {"light", "dark", "classic"};
+    for (int i = 0; i < 3; ++i)
+        menu_->mode(theme_actions_[i], FL_MENU_RADIO | (i == 2 ? FL_MENU_DIVIDER : 0) |
+                                           (theme_.name() == names[i] ? FL_MENU_VALUE : 0));
+    const char *sources[] = {connectSvg, profileSvg, newSvg, runSvg, cancelSvg};
+    const char *classes[] = {"connect", "profile", "new", "run", "cancel"};
+    for (auto *button : tool_buttons_)
+        button->image(nullptr);
+    icons_.clear();
+    for (std::size_t i = 0; i < tool_buttons_.size(); ++i)
+    {
+        std::string source = sources[i];
+        const auto color = theme_.style("icon", {classes[i]}).color;
+        unsigned char r, g, b;
+        Fl::get_color(color, r, g, b);
+        std::ostringstream hex;
+        hex << '#' << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned>(r)
+            << std::setw(2) << static_cast<unsigned>(g) << std::setw(2) << static_cast<unsigned>(b);
+        const auto start = source.find("stroke=\"");
+        if (start != std::string::npos)
+        {
+            const auto end = source.find('"', start + 8);
+            source.replace(start + 8, end - start - 8, hex.str());
+        }
+        Fl_SVG_Image svg(nullptr, source.c_str());
+        icons_.emplace_back(svg.copy(20, 20));
+        tool_buttons_[i]->image(icons_.back().get());
+    }
+    redraw();
+}
+void Window::useTheme(const std::string &name, const std::filesystem::path &file)
+{
+    theme_.load(name, file);
+    applyTheme();
+    if (!smoke_)
+        save();
+}
+void Window::changeTheme(const char *name)
+{
+    try
+    {
+        useTheme(name);
+    }
+    catch (const std::exception &ex)
+    {
+        error(ex);
+    }
+}
+void Window::loadThemeCss()
+{
+    auto file = chooseFile(false, tr("Load stylesheet"), "CSS\t*.css");
+    if (file.empty())
+        return;
+    try
+    {
+        useTheme(theme_.name(), std::filesystem::u8path(file));
+    }
+    catch (const std::exception &ex)
+    {
+        error(ex);
+    }
+}
+void Window::reloadThemeCss()
+{
+    try
+    {
+        useTheme(theme_.name(), theme_.file());
+    }
+    catch (const std::exception &ex)
+    {
+        error(ex);
+    }
+}
+void Window::saveThemeCss()
+{
+    auto file = chooseFile(true, tr("Save stylesheet"), "CSS\t*.css");
+    if (file.empty())
+        return;
+    auto path = std::filesystem::u8path(file);
+    if (path.extension().empty())
+        path += ".css";
+    try
+    {
+        writeFile(path, theme_.source());
+    }
+    catch (const std::exception &ex)
+    {
+        error(ex);
+    }
 }
 QueryTab *Window::current()
 {
@@ -492,23 +733,26 @@ void Window::newQuery(std::string id, std::string database, std::string text, st
     }
     auto *previous = Fl_Group::current();
     Fl_Group::current(nullptr);
-    auto tab = std::make_unique<QueryTab>(*this, css, tabs_->x() + 1, tabs_->y() + 30,
-                                          tabs_->w() - 2, tabs_->h() - 31);
+    auto tab = std::make_unique<QueryTab>(*this, css, tabs_->x() + 1, tabs_->y() + 30, tabs_->w() - 2,
+                                          tabs_->h() - 31);
     Fl_Group::current(previous);
     tab->profile_id = id;
     tab->database = database.empty() ? "postgres" : database;
     tab->rename(name.empty() ? "Query " + std::to_string(sequence_++) : name);
     tab->sql.text(text.c_str());
     localize(*tab);
+    tab->applyTheme(theme_);
     updateTarget(*tab);
     tabs_->add(*tab);
     tab->when(FL_WHEN_CLOSED);
-    tab->callback([](Fl_Widget *widget, void *p)
-    {
-        auto &app = *static_cast<Window *>(p);
-        app.tabs_->value(widget);
-        app.closeQuery();
-    }, this);
+    tab->callback(
+        [](Fl_Widget *widget, void *p)
+        {
+            auto &app = *static_cast<Window *>(p);
+            app.tabs_->value(widget);
+            app.closeQuery();
+        },
+        this);
     tabs_->value(tab.get());
     tabs_->resize(tabs_->x(), tabs_->y(), tabs_->w(), tabs_->h());
     queries_.push_back(std::move(tab));
@@ -521,6 +765,15 @@ void Window::load()
     try
     {
         auto state = Json::parse(readFile(settings_));
+        try
+        {
+            theme_.load(state.value("theme", "light"), std::filesystem::u8path(state.value("theme_css", "")));
+        }
+        catch (const std::exception &ex)
+        {
+            theme_.load("light");
+            status_->copy_label((std::string("Theme could not be loaded: ") + ex.what()).c_str());
+        }
         profiles_ = state.value("profiles", std::vector<Profile>{});
         history_ = state.value("history", std::vector<Json>{});
         if (history_.size() > 100)
@@ -534,6 +787,7 @@ void Window::load()
                      entry.value("name", ""));
             current()->path = entry.value("path", "");
             current()->saved_name = entry.value("library", "");
+            current()->splitRatio(entry.value("split", 0.45));
             current()->bom = entry.value("bom", false);
             current()->dirty = entry.value("dirty", false);
             if (!current()->path.empty())
@@ -595,12 +849,20 @@ void Window::save()
     state["tabs"] = Json::array();
     state["history"] = history_;
     state["language"] = language();
+    state["theme"] = theme_.name();
+    state["theme_css"] = theme_.file().u8string();
     state["docking"] = Json::array();
     for (const auto &panel : dock_->save_layout())
-        state["docking"].push_back({{"id", panel.id}, {"side", static_cast<int>(panel.side)},
-                                    {"extent", panel.extent}, {"open", panel.open},
-                                    {"floating", panel.floating}, {"x", panel.x}, {"y", panel.y},
-                                    {"w", panel.w}, {"h", panel.h}, {"tab_group", panel.tab_group},
+        state["docking"].push_back({{"id", panel.id},
+                                    {"side", static_cast<int>(panel.side)},
+                                    {"extent", panel.extent},
+                                    {"open", panel.open},
+                                    {"floating", panel.floating},
+                                    {"x", panel.x},
+                                    {"y", panel.y},
+                                    {"w", panel.w},
+                                    {"h", panel.h},
+                                    {"tab_group", panel.tab_group},
                                     {"active", panel.active}});
     for (std::size_t i = 0; i < queries_.size(); ++i)
     {
@@ -613,6 +875,7 @@ void Window::save()
                                  {"sql", contents(tab->sql)},
                                  {"path", tab->path},
                                  {"widths", tab->result->widths()},
+                                 {"split", tab->splitRatio()},
                                  {"library", tab->saved_name},
                                  {"dirty", tab->dirty},
                                  {"bom", tab->bom},
@@ -832,9 +1095,26 @@ void Window::treeClick()
                                 "Refresh"};
         Fl_Menu_Item menu[15]{};
         for (int i = 0; i < 14; ++i)
-            menu[i].label(labels[i]);
-        auto *selected = menu[0].popup(Fl::event_x_root(), Fl::event_y_root());
+            menu[i].label(tr(labels[i]));
+        const int kind = found->second.kind;
+        if (kind == 0)
+            menu[1].flags |= FL_MENU_INACTIVE;
+        if (kind != 0)
+            for (int i : {2, 3, 4})
+                menu[i].flags |= FL_MENU_INACTIVE;
+        if (kind != 1)
+            for (int i : {6, 7, 8})
+                menu[i].flags |= FL_MENU_INACTIVE;
+        if (kind == 4)
+            for (int i : {9, 10, 11})
+                menu[i].flags |= FL_MENU_INACTIVE;
+        for (int i : {1, 4, 8, 11, 12})
+            menu[i].flags |= FL_MENU_DIVIDER;
+        auto *selected = menu[0].popup(Fl::event_x(), Fl::event_y());
         if (!selected)
+            return;
+        found = nodes_.find(item);
+        if (found == nodes_.end())
             return;
         auto action = selected - menu;
         if (action == 0)
@@ -1226,7 +1506,7 @@ void Window::about()
     text.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
     text.copy_label((std::string("pgadmin-jr ") + PGADM_APP_VERSION +
                      "\n\nNative PostgreSQL administration\nFLTK, fltk-css, fltk-cell, libpq and "
-                     "libxlsxwriter\n\nC++17 / STL - no Qt runtime\nhttps://github.com/hdijkema/pgadmin-jr")
+                     "libxlsxwriter\n\nhttps://github.com/hdijkema/pgadmin-jr")
                         .c_str());
     Fl_Button close(490, 225, 105, 30, "Close");
     close.callback([](Fl_Widget *, void *p) { static_cast<Fl_Window *>(p)->hide(); }, &dialog);

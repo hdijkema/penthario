@@ -26,8 +26,6 @@ def check_dependencies(file: Path, load_commands: str) -> None:
         r'cmd LC_(?:LOAD_DYLIB|LOAD_WEAK_DYLIB|REEXPORT_DYLIB|LAZY_LOAD_DYLIB|LOAD_UPWARD_DYLIB)'
         r'\s+cmdsize \d+\s+name (.*?) \(offset', load_commands)
     for dependency in dependencies:
-        if re.search(r'(?:^|/)(?:Qt[A-Z0-9][^/]*|libQt[0-9][^/]*)', dependency):
-            raise ValueError(f'Qt dependency left in {file}: {dependency}')
         if dependency.startswith('/') and not dependency.startswith(('/usr/lib/', '/System/Library/')):
             raise ValueError(f'External dependency left in {file}: {dependency}')
 
@@ -44,7 +42,7 @@ def move_license_notices(app: Path) -> None:
 
 
 def package(build: Path, pg: Path, requested_version: str) -> None:
-    """Bundle the Qt-free app and client tools, sign and verify an arm64 DMG."""
+    """Bundle the native app and client tools, sign and verify an arm64 DMG."""
     if sys.platform != 'darwin' or os.uname().machine != 'arm64':
         raise ValueError('This initial DMG package requires native Apple Silicon macOS.')
     project = Path(__file__).resolve().parents[1]

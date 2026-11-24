@@ -5,6 +5,7 @@
 #include "sql_editor.h"
 #include "query_library.h"
 #include "i18n.h"
+#include "theme.h"
 #include <fltk_css_widgets.h>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Tree.H>
@@ -30,7 +31,7 @@ struct QueryTab : Fl_Group
     std::unique_ptr<Session> session;
     Fl_Text_Buffer sql, styles, messages, plan;
     SqlEditor *editor;
-    Fl_Box *target;
+    Fl_Box *target, *splitter;
     Fl_Text_Display *message_view, *plan_view;
     fltk_dock::Tabs *output;
     ResultTable *result;
@@ -40,10 +41,22 @@ struct QueryTab : Fl_Group
     QueryTab(Window &, FLTK_Css &, int, int, int, int);
     ~QueryTab() override;
     void resize(int, int, int, int) override;
+    int handle(int) override;
+    double splitRatio() const
+    {
+        return split_ratio_;
+    }
+    void splitRatio(double);
+    void applyTheme(const Theme &);
     void highlight();
     void rename(std::string);
     bool planSelected() const;
     void log(const std::string &);
+
+  private:
+    std::array<Fl_Text_Display::Style_Table_Entry, 4> syntax_;
+    double split_ratio_ = 0.45;
+    bool splitting_ = false, splitter_hover_ = false;
 };
 
 // FLTK-only query frontend. Session workers own libpq; the GUI drains immutable result batches.
@@ -69,7 +82,16 @@ class Window : public Fl_Css_Window
     void libraryAction();
     void searchReplace();
     void changeLanguage(const char *);
-    void importQtWorkspace();
+    void changeTheme(const char *);
+    void useTheme(const std::string &, const std::filesystem::path &css_file = {});
+    void loadThemeCss();
+    void reloadThemeCss();
+    void saveThemeCss();
+    const Theme &theme() const
+    {
+        return theme_;
+    }
+    void importWorkspace();
     void exportCsv();
     void exportExcel();
     void databaseTask(int);
@@ -89,6 +111,10 @@ class Window : public Fl_Css_Window
     FLTK_Css &css;
 
   private:
+    Theme theme_;
+    void applyTheme();
+    std::array<int, 3> theme_actions_{};
+    std::vector<Fl_Button *> tool_buttons_;
     QueryTab *current();
     Profile *profile(const std::string &);
     bool ensureSession(QueryTab &, bool interactive = true);

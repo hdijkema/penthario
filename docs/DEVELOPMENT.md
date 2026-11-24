@@ -2,14 +2,13 @@
 
 The root CMake project builds the FLTK application by default. It requires a
 C++17 compiler, CMake, libpq and the native libraries listed in
-[dependencies](DEPENDENCIES.md). Qt is not involved in the default build.
+[dependencies](DEPENDENCIES.md).
 
 ## Windows
 
 Use Visual Studio 2022 C++ tools, CMake and Ninja. The local scripts discover
 Visual Studio with vswhere. `PGADM_CMAKE` and `PGADM_NINJA` override tool paths;
-the existing local defaults may point to tools installed alongside Qt, without
-using Qt libraries.
+the defaults use CMake and Ninja from PATH.
 
 For sibling pgadmin-jr/fltk-cell/fltk-css development checkouts:
 
@@ -43,6 +42,11 @@ native Apple Silicon bundle. Platform scripts document their system packages.
 
 ## Ownership and concurrency
 
+Appearance is handled by `Theme`, which loads embedded CSS and optional local
+overrides, updates the FLTK palette and applies native widget properties.
+`Window::applyTheme` refreshes dock panels, toolbar SVGs and each tab's syntax
+colors. See [themes](THEMES.md) for selectors and the editable translation catalog.
+
 Each Session owns its libpq connection on one worker. The GUI consumes bounded
 event batches, discarding stale execution generations. Catalog and administrative
 work do not borrow a query transaction. Cancellation also covers connection
@@ -52,7 +56,7 @@ merged progress output. Passwords are never command-line arguments.
 
 STL models contain no widget pointers. ResultTable maps values to fltk-cell
 renderers. Editor overlays belong to fltk-cell, separately from drawing. Keep
-wrappers small; the XLSX wrapper deliberately exposes no Qt-like spreadsheet API.
+wrappers small; the XLSX wrapper only writes result cells and closes the workbook.
 
 New query tabs use an explicit profile/database when supplied. Otherwise
 `Window::newQuery` takes the selected browser node's target, then falls back to
@@ -86,3 +90,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests/run-fltk-integration.p
 It creates its own PostgreSQL cluster and disposable databases, checks ownership
 before mutations, and shuts that cluster down. Never point it at an existing
 server. Packaging checks use private settings and installer identities.
+
+## Windows FLTK SDK configuration
+
+A Release application must use a Release FLTK SDK. CMake normally allows an
+imported Debug library as a fallback when no Release library was installed.
+FLTK's Debug WinMain intentionally allocates a console, even for a Windows GUI
+executable. The application disallows that fallback and the Windows packager
+checks `Console window: none` in the isolated startup report. Build FLTK itself
+in Release, or let FetchContent build the selected FLTK release with the app.
+Keep a Debug SDK in a separate prefix when both configurations are needed.

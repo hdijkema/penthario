@@ -69,14 +69,14 @@ int main(int argc, char **argv)
         require(pgjr::credentialKey(first) != pgjr::credentialKey(changed),
                 "Credentials bound to server host");
         require(!pgjr::Json(first).contains("password"), "Passwords excluded from JSON");
-        auto legacy = pgjr::readQtWorkspace(std::filesystem::path(PGADM_SOURCE_DIR) /
-                                            "tests/fixtures/qt-workspace.ini");
+        auto legacy = pgjr::readLegacyWorkspace(std::filesystem::path(PGADM_SOURCE_DIR) /
+                                            "tests/fixtures/legacy-workspace.ini");
         require(legacy["profiles"][0]["name"] == "Legacy café" && legacy["profiles"][0]["port"] == "65432",
-                "Qt profile import without Qt");
+                "Legacy profile import");
         require(legacy["tabs"][0]["name"] == "Imported tab" &&
                     legacy["tabs"][0]["sql"] == "-- résumé\nSELECT '☃';" &&
                     legacy["tabs"][0]["widths"][1] == 300,
-                "Qt workspace UTF-16/tab import");
+                "Legacy workspace UTF-16/tab import");
         auto statements =
             pgjr::splitSql("-- @resultaat: First\nSELECT ';'; /* /* nested */ ok */ SELECT $$a;b$$;", error);
         require(error.empty() && statements.size() == 2 && statements.front().title == "First",

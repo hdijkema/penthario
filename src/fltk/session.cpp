@@ -118,7 +118,7 @@ void Session::run()
     if (connection_)
         PQfinish(connection_);
 }
-// Use libpq directly on the worker; no GUI or Qt facilities participate in DNS or authentication.
+// libpq performs DNS and authentication on the session worker.
 void Session::open(const Work &work)
 {
     connected_ = false;

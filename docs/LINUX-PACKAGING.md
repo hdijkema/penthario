@@ -1,7 +1,7 @@
 # Linux packaging
 
-The native Linux build uses FLTK/X11, libpq and libsecret. It has no Qt or KDE
-runtime dependency. A running Secret Service is needed only for remembering
+The native Linux build uses FLTK/X11, libpq and libsecret.
+A running Secret Service is needed only for remembering
 passwords. The existing application ID `io.github.hdijkema.AltPgAdmin` is retained
 for desktop/Flatpak continuity despite the display name pgadmin-jr.
 
