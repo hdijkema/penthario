@@ -12,14 +12,12 @@ if [[ -n $version && ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0
     echo 'Use a numeric release version, e.g. 0.2.0.' >&2
     exit 1
 fi
-qt_root=${PGADM_QT_ROOT:?Set PGADM_QT_ROOT to the Qt macOS SDK directory}
 pg_root=$(brew --prefix libpq@18)
 build_dir="$repo_dir/build/macos"
 cmake -S . -B "$build_dir" -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
-    "-DCMAKE_PREFIX_PATH=$qt_root;$pg_root" "-DPostgreSQL_ROOT=$pg_root" \
-    -DPGADM_BUILD_TESTS=ON "-DPGADM_RELEASE_VERSION=$version"
+    "-DCMAKE_PREFIX_PATH=$pg_root" "-DPostgreSQL_ROOT=$pg_root" \
+    -DPGADM_FLTK_TESTS=ON "-DPGADM_RELEASE_VERSION=$version"
 cmake --build "$build_dir" --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
-ctest --test-dir "$build_dir" --output-on-failure -R '^translations_catalog$'
-QT_QPA_PLATFORM=offscreen "$build_dir/tst_browser" translations -o "$build_dir/translations-ui.txt,txt"
-python3 tools/package-macos.py --build-dir "$build_dir" --qt-root "$qt_root" --pg-root "$pg_root" --version "$version"
+ctest --test-dir "$build_dir" --output-on-failure
+python3 tools/package-macos.py --build-dir "$build_dir" --pg-root "$pg_root" --version "$version"

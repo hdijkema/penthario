@@ -26,6 +26,8 @@ def check_dependencies(file: Path, load_commands: str) -> None:
         r'cmd LC_(?:LOAD_DYLIB|LOAD_WEAK_DYLIB|REEXPORT_DYLIB|LAZY_LOAD_DYLIB|LOAD_UPWARD_DYLIB)'
         r'\s+cmdsize \d+\s+name (.*?) \(offset', load_commands)
     for dependency in dependencies:
+        if re.search(r'(?:^|/)(?:Qt[A-Z0-9][^/]*|libQt[0-9][^/]*)', dependency):
+            raise ValueError(f'Qt dependency left in {file}: {dependency}')
         if dependency.startswith('/') and not dependency.startswith(('/usr/lib/', '/System/Library/')):
             raise ValueError(f'External dependency left in {file}: {dependency}')
 
@@ -41,16 +43,8 @@ def move_license_notices(app: Path) -> None:
             shutil.move(notice, resources / notice.name)
 
 
-def bundle_qt_translations(app: Path, qt: Path) -> None:
-    """Place Qt translations in Resources, outside the signed executable directory."""
-    translations = app / 'Contents/Resources/translations'
-    translations.mkdir(parents=True, exist_ok=True)
-    for language in ['nl', 'de']:
-        shutil.copy2(qt / f'translations/qtbase_{language}.qm', translations / f'qt_{language}.qm')
-
-
-def package(build: Path, qt: Path, pg: Path, requested_version: str) -> None:
-    """Bundle client dependencies and Qt, ad-hoc sign, mount/test and emit an arm64 DMG."""
+def package(build: Path, pg: Path, requested_version: str) -> None:
+    """Bundle the Qt-free app and client tools, sign and verify an arm64 DMG."""
     if sys.platform != 'darwin' or os.uname().machine != 'arm64':
         raise ValueError('This initial DMG package requires native Apple Silicon macOS.')
     project = Path(__file__).resolve().parents[1]
@@ -77,25 +71,16 @@ def package(build: Path, qt: Path, pg: Path, requested_version: str) -> None:
     frameworks.mkdir(exist_ok=True)
     tools = ['pg_dump', 'pg_restore', 'psql', 'createdb', 'dropdb']
     dependency_arguments = ['dylibbundler', '-b', '-cd', '-of', '-d', frameworks,
-                            '-p', '@executable_path/../Frameworks/']
+                            '-p', '@executable_path/../Frameworks/', '-x', binaries / 'pgadmin-jr']
     for tool in tools:
         shutil.copy2(pg / 'bin' / tool, binaries / tool, follow_symlinks=True)
         (binaries / tool).chmod((binaries / tool).stat().st_mode | 0o200)
         dependency_arguments.extend(['-x', binaries / tool])
     run(dependency_arguments)
     executable = binaries / 'pgadmin-jr'
-    links = subprocess.check_output(['otool', '-L', str(executable)], text=True)
-    pq_links = [line.strip().split(' (', 1)[0] for line in links.splitlines()[1:] if 'libpq.' in line]
-    if len(pq_links) != 1 or not (frameworks / Path(pq_links[0]).name).is_file():
-        raise ValueError('The PostgreSQL client library was not deployed beside its tools.')
-    run(['install_name_tool', '-change', pq_links[0],
-         '@executable_path/../Frameworks/' + Path(pq_links[0]).name, executable])
-    deployment = [qt / 'bin/macdeployqt', app, '-always-overwrite', '-no-codesign', '-verbose=2']
-    deployment.extend('-executable=' + str(binaries / tool) for tool in tools)
-    run(deployment)
-    bundle_qt_translations(app, qt)
     licenses = app / 'Contents/Resources/licenses'
     licenses.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(build / 'notices', licenses, dirs_exist_ok=True)
     for name in ['LICENSE', 'README.md']:
         shutil.copy2(project / name, licenses / name)
     formulae = ['libpq@18'] + subprocess.check_output(['brew', 'deps', '--formula', 'libpq@18'], text=True).splitlines()
@@ -146,14 +131,13 @@ def package(build: Path, qt: Path, pg: Path, requested_version: str) -> None:
     try:
         mounted = mount / app.name
         run(['codesign', '--verify', '--deep', '--strict', mounted])
-        environment = dict(os.environ, PATH='/usr/bin:/bin:/usr/sbin:/sbin',
-                           QT_PLUGIN_PATH=str(mounted / 'Contents/PlugIns'), QT_QPA_PLATFORM='cocoa')
-        for key in ['DYLD_LIBRARY_PATH', 'DYLD_FRAMEWORK_PATH', 'QTDIR', 'QT_QPA_PLATFORM_PLUGIN_PATH']:
+        environment = dict(os.environ, PATH='/usr/bin:/bin:/usr/sbin:/sbin')
+        for key in ['DYLD_LIBRARY_PATH', 'DYLD_FRAMEWORK_PATH']:
             environment.pop(key, None)
         for language in ['nl', 'en', 'de']:
             report = reports / f'startup-{language}.txt'
             run([mounted / 'Contents/MacOS/pgadmin-jr', '--language', language, '--startup-check',
-                 '--settings-file', work / f'settings-{language}.ini', '--startup-report', report],
+                 '--settings-file', work / f'settings-{language}.json', '--startup-report', report],
                 env=environment, timeout=30)
             if f'Application version: {version}' not in report.read_text():
                 raise ValueError('Mounted application startup/version check failed.')
@@ -171,8 +155,7 @@ def package(build: Path, qt: Path, pg: Path, requested_version: str) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build-dir', type=Path, required=True)
-    parser.add_argument('--qt-root', type=Path, required=True)
     parser.add_argument('--pg-root', type=Path, required=True)
     parser.add_argument('--version', default='')
     args = parser.parse_args()
-    package(args.build_dir.resolve(), args.qt_root.resolve(), args.pg_root.resolve(), args.version)
+    package(args.build_dir.resolve(), args.pg_root.resolve(), args.version)

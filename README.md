@@ -6,7 +6,7 @@
 pgAdmin junior: a focused companion for the PostgreSQL tasks you use most often.
 
 pgadmin-jr brings SQL editing, database browsing, result export and administration
-into a C++/Qt Widgets application. Connect to a server, choose a database and work
+into a C++17/FLTK application. Connect to a server, choose a database and work
 in independent query tabs, each with its own session and transaction.
 
 ## Why it exists
@@ -69,8 +69,13 @@ rename it; leaving the name empty restores the default title.
 
 ## Documentation and development
 
+The default application uses **FLTK**, **fltk-css** and **fltk-cell**, with STL
+values and libpq worker sessions. Qt is not required to build or run it.
+See [FLTK implementation](docs/FLTK.md) for limits and migration details.
+
 - [User and build guide](docs/USER-GUIDE.md): detailed usage, shortcuts, settings,
   dependencies, local builds and tests.
+- [Validation report](docs/VALIDATION.md): local checks and platform limits.
 - [Development guide](docs/DEVELOPMENT.md): component responsibilities, sessions
   and data flow.
 - [Source layout](docs/SOURCE-LAYOUT.md): where the application code lives.
@@ -78,10 +83,14 @@ rename it; leaving the name empty restores the default title.
 - [Linux packaging](docs/LINUX-PACKAGING.md) and [macOS packaging](docs/MACOS-PACKAGING.md):
   installation, runtime dependencies and validation/signing limits.
 
-The application uses C++17, Qt Widgets and libpq. Open the root `CMakeLists.txt`
-in Qt Creator, or follow the build guide. Windows is the local development and
-validation baseline; hosted workflows build the other platforms. Documentation
-and source comments are written in English.
+Build the root `CMakeLists.txt` with CMake and a C++17 compiler. Windows is
+the local validation baseline; the hosted workflows build the other platforms.
+Documentation and source comments are written in English.
+
+Dependency versions are selected by release tags. Before the first hosted build
+of this migration, publish `fltk-css` **v0.1.0**, then `fltk-cell` **v0.1.0**.
+Local development can use explicit sibling source paths instead. See
+[dependencies and release order](docs/DEPENDENCIES.md).
 
 See [LICENSE](LICENSE) for the project licence. Third-party icon and library
 licence notices are included with the source and distribution packages.

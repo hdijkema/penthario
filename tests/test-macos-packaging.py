@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
 packaging = runpy.run_path(str(ROOT / 'tools/package-macos.py'))
 check_dependencies = packaging['check_dependencies']
 move_license_notices = packaging['move_license_notices']
-bundle_qt_translations = packaging['bundle_qt_translations']
 
 
 class MacPackagingTest(unittest.TestCase):
@@ -20,37 +19,26 @@ class MacPackagingTest(unittest.TestCase):
             resources = app / 'Contents/Resources'
             binaries.mkdir(parents=True)
             (binaries / 'Lucide-LICENSE.txt').write_text('license')
-            (binaries / 'QtKeychain-COPYING.txt').write_text('copying')
+            (binaries / 'keychain-LICENSE.txt').write_text('copying')
             (binaries / 'pgadmin-jr').write_text('executable')
             (binaries / 'readme.txt').write_text('other text')
 
             move_license_notices(app)
 
             self.assertEqual((resources / 'Lucide-LICENSE.txt').read_text(), 'license')
-            self.assertEqual((resources / 'QtKeychain-COPYING.txt').read_text(), 'copying')
+            self.assertEqual((resources / 'keychain-LICENSE.txt').read_text(), 'copying')
             self.assertTrue((binaries / 'pgadmin-jr').is_file())
             self.assertTrue((binaries / 'readme.txt').is_file())
             self.assertFalse((binaries / 'Lucide-LICENSE.txt').exists())
-            self.assertFalse((binaries / 'QtKeychain-COPYING.txt').exists())
+            self.assertFalse((binaries / 'keychain-LICENSE.txt').exists())
 
-    def test_qt_translations_are_bundled_in_resources(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            root = Path(temporary_directory)
-            app = root / 'pgadmin-jr.app'
-            qt = root / 'Qt'
-            (qt / 'translations').mkdir(parents=True)
-            for language in ['nl', 'de']:
-                (qt / f'translations/qtbase_{language}.qm').write_text(language)
-
-            bundle_qt_translations(app, qt)
-
-            for language in ['nl', 'de']:
-                translation = app / f'Contents/Resources/translations/qt_{language}.qm'
-                self.assertEqual(translation.read_text(), language)
-                self.assertFalse((app / f'Contents/MacOS/translations/qt_{language}.qm').exists())
+    def test_qt_imports_are_rejected(self):
+        commands = 'cmd LC_LOAD_DYLIB\n cmdsize 88\n name @rpath/QtCore.framework/Versions/A/QtCore (offset 24)\n'
+        with self.assertRaisesRegex(ValueError, 'Qt dependency'):
+            check_dependencies(Path('pgadmin-jr'), commands)
 
     def test_plugin_install_name_is_not_an_import(self):
-        # macdeployqt can set an absolute ID inside the staged bundle (the reported CI failure).
+        # A library ID describes itself, not an imported dependency.
         check_dependencies(Path('libqcocoa.dylib'), '''Load command 0
           cmd LC_ID_DYLIB
       cmdsize 184
@@ -59,7 +47,7 @@ class MacPackagingTest(unittest.TestCase):
 Load command 1
           cmd LC_LOAD_DYLIB
       cmdsize 88
-         name @rpath/QtGui.framework/Versions/A/QtGui (offset 24)
+         name @rpath/libpq.5.dylib (offset 24)
 Load command 2
           cmd LC_LOAD_DYLIB
       cmdsize 56
@@ -74,7 +62,7 @@ Load command 3
         for command in ('LC_LOAD_DYLIB', 'LC_LOAD_WEAK_DYLIB', 'LC_REEXPORT_DYLIB',
                         'LC_LAZY_LOAD_DYLIB', 'LC_LOAD_UPWARD_DYLIB'):
             for dependency in ('/opt/homebrew/opt/libpq/lib/libpq.5.dylib',
-                               '/Users/runner/build Qt/lib/QtCore',
+                               '/Users/runner/build ThirdParty/lib/custom.dylib',
                                '/usr/library/not-a-system-library.dylib'):
                 with self.subTest(command=command, dependency=dependency):
                     # No ID: an executable's first library entry must still be checked.

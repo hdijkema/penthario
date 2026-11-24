@@ -1,19 +1,16 @@
 {
   "app-id": "io.github.hdijkema.AltPgAdmin",
-  "runtime": "org.kde.Platform",
-  "runtime-version": "6.10",
-  "sdk": "org.kde.Sdk",
+  "runtime": "org.freedesktop.Platform",
+  "runtime-version": "26.08",
+  "sdk": "org.freedesktop.Sdk",
   "command": "pgadmin-jr",
   "finish-args": [
     "--share=ipc",
     "--share=network",
-    "--socket=wayland",
-    "--socket=fallback-x11",
-    "--device=dri",
     "--filesystem=host",
     "--filesystem=/run/postgresql",
     "--talk-name=org.freedesktop.secrets",
-    "--talk-name=org.kde.kwalletd6"
+    "--socket=x11"
   ],
   "cleanup": [
     "/include",
@@ -25,10 +22,29 @@
   ],
   "modules": [
     {
+      "name": "libsecret",
+      "buildsystem": "meson",
+      "config-opts": [
+        "-Dmanpage=false",
+        "-Dgtk_doc=false",
+        "-Dintrospection=false",
+        "-Dvapi=false",
+        "-Dcrypto=gnutls",
+        "-Dbash_completion=disabled"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/GNOME/libsecret.git",
+          "tag": "0.21.7"
+        }
+      ]
+    },
+    {
       "name": "postgresql-client",
       "buildsystem": "simple",
       "build-commands": [
-        "./configure --prefix=/app --with-ssl=openssl --without-readline --without-icu --without-zlib --without-lz4 --without-zstd",
+        "./configure --prefix=/app --with-ssl=openssl --without-readline --without-icu --with-lz4 --with-zstd",
         "make -j${FLATPAK_BUILDER_N_JOBS}",
         "make -C src/interfaces/libpq install",
         "make -C src/include install",
@@ -51,9 +67,14 @@
       "buildsystem": "cmake-ninja",
       "config-opts": [
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DPGADM_BUILD_TESTS=OFF",
+        "-DPGADM_FLTK_TESTS=OFF",
+        "-DFLTK_BACKEND_WAYLAND=OFF",
         "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
-        "-DFETCHCONTENT_SOURCE_DIR_QTKEYCHAIN=/run/build/pgadmin-jr/vendor/qtkeychain",
+        "-DPGADM_FLTK_CELL_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-cell",
+        "-DFLTK_CELL_CSS_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-css",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK=/run/build/pgadmin-jr/vendor/fltk",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK_JSON=/run/build/pgadmin-jr/vendor/json",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK_KEYCHAIN=/run/build/pgadmin-jr/vendor/keychain",
         "-DFETCHCONTENT_SOURCE_DIR_ZLIB=/run/build/pgadmin-jr/vendor/zlib",
         "-DFETCHCONTENT_SOURCE_DIR_LIBXLSXWRITER=/run/build/pgadmin-jr/vendor/libxlsxwriter"
       ],
@@ -74,12 +95,6 @@
         },
         {
           "type": "archive",
-          "url": "https://github.com/frankosterfeld/qtkeychain/archive/refs/tags/0.17.0.tar.gz",
-          "sha256": "3b85c3929034b0a99da777130c34d99f006fcd3a9d56564159399a33fee0e504",
-          "dest": "vendor/qtkeychain"
-        },
-        {
-          "type": "archive",
           "url": "https://github.com/madler/zlib/archive/refs/tags/v1.3.2.tar.gz",
           "sha256": "b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1",
           "dest": "vendor/zlib"
@@ -89,6 +104,36 @@
           "url": "https://github.com/jmcnamara/libxlsxwriter/archive/refs/tags/v1.2.4.tar.gz",
           "sha256": "e0db59fc248a5ffa465a05ea83a9d466d4bca0e53ab42771515d4ebb467a41c1",
           "dest": "vendor/libxlsxwriter"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/fltk/fltk.git",
+          "tag": "release-1.4.5",
+          "dest": "vendor/fltk"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/hdijkema/fltk-css.git",
+          "tag": "v0.1.0",
+          "dest": "vendor/fltk-css"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/hdijkema/fltk-cell.git",
+          "tag": "v0.1.0",
+          "dest": "vendor/fltk-cell"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/nlohmann/json.git",
+          "tag": "v3.12.0",
+          "dest": "vendor/json"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/hrantzsch/keychain.git",
+          "tag": "v1.3.1",
+          "dest": "vendor/keychain"
         }
       ],
       "no-make-install": true,

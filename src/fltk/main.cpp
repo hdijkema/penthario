@@ -1,0 +1,94 @@
+#include "window.h"
+#include <FL/Fl.H>
+#include <FL/Fl_SVG_Image.H>
+#include "assets.h"
+#include <iostream>
+#include <chrono>
+#include <algorithm>
+#include <FL/fl_ask.H>
+
+int main(int argc, char **argv)
+{
+    const auto started = std::chrono::steady_clock::now();
+    bool smoke = false;
+    std::filesystem::path settings = pgjr::configDirectory() / "settings.json", report;
+    std::string requested_language;
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "--settings-file" && i + 1 < argc)
+            settings = std::filesystem::u8path(argv[++i]);
+        else if (arg == "--startup-check")
+            smoke = true;
+        else if (arg == "--startup-report" && i + 1 < argc)
+            report = std::filesystem::u8path(argv[++i]);
+        else if (arg == "--language" && i + 1 < argc)
+            requested_language = argv[++i];
+        else if (arg == "--version")
+        {
+            std::cout << "pgadmin-jr " << PGADM_APP_VERSION << '\n';
+            return 0;
+        }
+        else
+        {
+            std::cerr << "Unknown or incomplete argument: " << arg << '\n';
+            return 1;
+        }
+    }
+    try
+    {
+        std::string locale = "nl";
+        if (std::filesystem::exists(settings))
+        {
+            try
+            {
+                locale = pgjr::Json::parse(pgjr::readFile(settings)).value("language", "nl");
+            }
+            catch (...)
+            {
+            }
+        }
+        pgjr::language(requested_language.empty() ? locale : requested_language);
+        Fl::lock();
+        FLTK_Css css;
+        css.parse("window, group { background: #edf1f5; color: #203040; font-size: 14px; } button { "
+                  "background: #e0e8f0; color: #203040; border: 1px solid #a0b0c0; border-radius: 4px; } "
+                  "button:hover { background: #c8ddf0; } cell { background: #ffffff; color: #203040; border: "
+                  "1px solid #d8e0e8; font-size: 14px; } cell.header { background: #dce6f0; font-weight: "
+                  "bold; } cell.section { background: #c5d7e9; font-weight: bold; } cell.status { "
+                  "background: #f0f3f6; color: #526070; } cell.null { color: #7a8590; }");
+        pgjr::Window window(css, settings, smoke);
+        Fl_SVG_Image svg(nullptr, appSvg);
+        std::unique_ptr<Fl_Image> image(svg.copy(64, 64));
+        if (auto *rgb = dynamic_cast<Fl_RGB_Image *>(image.get()))
+            window.icon(rgb);
+        else
+            throw std::runtime_error("Application icon could not be rendered");
+        int screen_x = 0, screen_y = 0, screen_w = 0, screen_h = 0;
+        Fl::screen_work_area(screen_x, screen_y, screen_w, screen_h, 0);
+        const int width = std::max(1000, std::min(1200, screen_w - 24)),
+                  height = std::max(560, std::min(820, screen_h - 70));
+        window.resize(screen_x + std::max(0, (screen_w - width) / 2),
+                      screen_y + std::max(0, (screen_h - height) / 2), width, height);
+        window.show();
+        if (smoke)
+        {
+            if (!report.empty())
+                pgjr::writeFile(report,
+                                std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                   std::chrono::steady_clock::now() - started)
+                                                   .count()) +
+                                    " ms to window construction\nApplication version: " + PGADM_APP_VERSION +
+                                    "\nToolkit: FLTK (no Qt)\nLanguage: " + pgjr::language() + "\n");
+            Fl::add_timeout(0.2, [](void *p) { static_cast<pgjr::Window *>(p)->hide(); }, &window);
+        }
+        return Fl::run();
+    }
+    catch (const std::exception &error)
+    {
+        std::cerr << error.what() << '\n';
+        if (!smoke)
+            fl_alert("pgadmin-jr could not start:\n%s", error.what());
+        return 1;
+    }
+}

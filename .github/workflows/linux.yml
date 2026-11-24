@@ -48,12 +48,10 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates git build-essential \
-            cmake ninja-build pkg-config python3 qt6-base-dev qt6-tools-dev-tools \
-            qt6-l10n-tools qt6-svg-dev qt6-translations-l10n libpq-dev libsecret-1-dev \
-            dpkg-dev file fonts-dejavu-core
-          if [ '${{ matrix.debian }}' = '13' ]; then
-            apt-get install -y --no-install-recommends qt6-svg-plugins
-          fi
+            cmake ninja-build pkg-config python3 libpq-dev libsecret-1-dev \
+            libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev \
+            libxfixes-dev libfontconfig1-dev libpango1.0-dev libpng-dev libjpeg-dev \
+            dpkg-dev file fonts-dejavu-core xvfb xauth
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
@@ -68,8 +66,8 @@ jobs:
           test "$(dpkg-deb --field ./dist/*.deb Architecture)" = '${{ matrix.platform.arch }}'
           apt-get install -y ./dist/*.deb
           for language in nl en de; do
-            QT_QPA_PLATFORM=offscreen /usr/bin/pgadmin-jr --language "$language" \
-              --settings-file "/tmp/package-$language.ini" --startup-check \
+            xvfb-run -a /usr/bin/pgadmin-jr --language "$language" \
+              --settings-file "/tmp/package-$language.json" --startup-check \
               --startup-report "/tmp/package-$language.txt"
             test -s "/tmp/package-$language.txt"
           done
@@ -102,32 +100,31 @@ jobs:
       - name: Install Flatpak builder
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
+          sudo apt-get install -y flatpak flatpak-builder xvfb xauth ccache
           sudo flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          flatpak remote-info --system flathub org.kde.Sdk/x86_64/6.10
+          flatpak remote-info --system flathub org.freedesktop.Sdk/x86_64/26.08
           sudo flatpak install --system --noninteractive -y flathub \
-            org.kde.Sdk/x86_64/6.10 org.kde.Platform/x86_64/6.10
+            org.freedesktop.Sdk/x86_64/26.08 org.freedesktop.Platform/x86_64/26.08
       - name: Set Flatpak application version
         env:
           PGADM_RELEASE_VERSION: ${{ inputs.version }}
         run: |
           python3 tools/prepare-flatpak.py --version "$PGADM_RELEASE_VERSION" \
             --output packaging/flatpak/build.json
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          manifest-path: packaging/flatpak/build.json
-          repository-url: https://dl.flathub.org/repo/flathub.flatpakrepo
-          bundle: pgadmin-jr-x86_64.flatpak
-          artifact-name: pgadmin-jr-flatpak-x86_64
-          upload-artifact: false
-          cache: true
+      - name: Build Qt-free Flatpak
+        run: |
+          xvfb-run -a flatpak-builder --repo=build/flatpak-repo --disable-rofiles-fuse \
+            --force-clean --default-branch=stable --arch=x86_64 --ccache \
+            build/flatpak-app packaging/flatpak/build.json
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            build/flatpak-repo pgadmin-jr-x86_64.flatpak io.github.hdijkema.AltPgAdmin stable
       - name: Check installed sandbox and client tools
         run: |
           sudo flatpak install --system --noninteractive -y pgadmin-jr-x86_64.flatpak
           mkdir -p build/flatpak-reports
           for language in nl en de; do
-            flatpak run --env=QT_QPA_PLATFORM=offscreen io.github.hdijkema.AltPgAdmin \
-              --language "$language" --settings-file "/tmp/smoke-$language.ini" --startup-check \
+            xvfb-run -a flatpak run --env=FLTK_BACKEND=x11 io.github.hdijkema.AltPgAdmin \
+              --language "$language" --settings-file "/tmp/smoke-$language.json" --startup-check \
               --startup-report "$GITHUB_WORKSPACE/build/flatpak-reports/startup-$language.txt"
             test -s "build/flatpak-reports/startup-$language.txt"
           done

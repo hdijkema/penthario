@@ -1,0 +1,27 @@
+set(ZLIB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(ZLIB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(ZLIB_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(ZLIB URL https://github.com/madler/zlib/archive/refs/tags/v1.3.2.tar.gz
+    URL_HASH SHA256=b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE OVERRIDE_FIND_PACKAGE)
+FetchContent_MakeAvailable(ZLIB)
+if(NOT TARGET ZLIB::ZLIB)
+    add_library(ZLIB::ZLIB ALIAS zlibstatic)
+endif()
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(USE_NO_MD5 ON CACHE BOOL "" FORCE)
+set(USE_OPENSSL_MD5 OFF CACHE BOOL "" FORCE)
+set(USE_SYSTEM_MINIZIP OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(libxlsxwriter URL https://github.com/jmcnamara/libxlsxwriter/archive/refs/tags/v1.2.4.tar.gz
+    URL_HASH SHA256=e0db59fc248a5ffa465a05ea83a9d466d4bca0e53ab42771515d4ebb467a41c1 DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+function(pgadm_add_xlsxwriter)
+    if(MSVC)
+        # libxlsxwriter supplies its own /Fd. Omit only CMake's duplicate for this subdirectory.
+        string(REPLACE "/Fd<TARGET_COMPILE_PDB>" "" CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}")
+    endif()
+    FetchContent_MakeAvailable(libxlsxwriter)
+endfunction()
+pgadm_add_xlsxwriter()
+FetchContent_GetProperties(libxlsxwriter)

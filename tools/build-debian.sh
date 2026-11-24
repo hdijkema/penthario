@@ -12,21 +12,15 @@ if [[ ${ID:-} != debian || ! ${VERSION_ID:-} =~ ^(12|13)$ ]]; then
 fi
 build_dir="build/debian${VERSION_ID}"
 cmake -S . -B "$build_dir" -G Ninja -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr -DPGADM_BUILD_TESTS=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr -DPGADM_FLTK_TESTS=ON -DFLTK_BACKEND_WAYLAND=OFF \
     "-DPGADM_DEBIAN_VERSION=$VERSION_ID" "-DPGADM_RELEASE_VERSION=${PGADM_RELEASE_VERSION:-}" "$@"
 cmake --build "$build_dir" --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
 # No running database, credentials or desktop keyring are required by this subset.
-QT_QPA_PLATFORM=offscreen ctest --test-dir "$build_dir" --output-on-failure -R '^(pgsession|queries|translations_catalog)$'
-(
-    cd "$build_dir"
-    QT_QPA_PLATFORM=offscreen ./tst_browser translations savedQueriesAndWidths \
-        editorSearchAndCompletion editorTabsRestore profileDialogKeepsSecretsSeparate \
-        databaseJobValidation roleSqlValidation maintenanceSqlValidation
-)
+xvfb-run -a ctest --test-dir "$build_dir" --output-on-failure
 for language in nl en de; do
     printf 'Checking application startup (%s)\n' "$language"
-    QT_QPA_PLATFORM=offscreen "$build_dir/pgadmin-jr" --language "$language" \
-        --settings-file "$repo_dir/$build_dir/smoke-$language.ini" --startup-check \
+    xvfb-run -a "$build_dir/pgadmin-jr" --language "$language" \
+        --settings-file "$repo_dir/$build_dir/smoke-$language.json" --startup-check \
         --startup-report "$repo_dir/$build_dir/startup-$language.txt"
     test -s "$repo_dir/$build_dir/startup-$language.txt"
 done

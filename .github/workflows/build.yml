@@ -53,7 +53,6 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 60
     env:
-      PGADM_QT_ROOT: ${{ github.workspace }}/build/Qt/6.11.1/msvc2022_64
       PGADM_CMAKE: cmake
       PGADM_NINJA: ninja
     steps:
@@ -63,21 +62,16 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install Qt and download PostgreSQL 18
+      - name: Download PostgreSQL 18
         shell: pwsh
-        run: |
-          # This upstream revision supports Qt 6.11's split Windows repositories.
-          python -m pip install "aqtinstall @ git+https://github.com/miurahr/aqtinstall.git@5a49f2b391ae8ee1d3c0dd87f8b33c1d49a4deb7"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -m aqt install-qt windows desktop 6.11.1 win64_msvc2022_64 --archives qtbase qtsvg qttools --outputdir "$env:GITHUB_WORKSPACE/build/Qt"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python tools/fetch-postgresql.py
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Build Release and deploy Qt
+        run: python tools/fetch-postgresql.py
+      - name: Build Qt-free Release
         shell: cmd
         env:
           PGADM_RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: build-release.cmd -DPGADM_BUILD_TESTS=OFF "-DPGADM_RELEASE_VERSION=%PGADM_RELEASE_VERSION%"
+        run: build-release.cmd -DPGADM_FLTK_TESTS=ON "-DPGADM_RELEASE_VERSION=%PGADM_RELEASE_VERSION%"
+      - name: Check application and UI
+        run: ctest --test-dir build/Release --output-on-failure
       - name: Install Inno Setup compiler
         shell: pwsh
         run: ./tools/install-inno-setup.ps1
@@ -85,7 +79,7 @@ jobs:
         shell: pwsh
         env:
           PGADM_RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: ./tools/package-windows.ps1 -QtRoot $env:PGADM_QT_ROOT -Version $env:PGADM_RELEASE_VERSION -InnoCompiler ./build/tools/inno-setup/ISCC.exe -TestInstaller
+        run: ./tools/package-windows.ps1 -Version $env:PGADM_RELEASE_VERSION -InnoCompiler ./build/tools/inno-setup/ISCC.exe -TestInstaller
       - name: Upload portable build
         uses: actions/upload-artifact@v6
         with:

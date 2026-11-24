@@ -29,7 +29,7 @@ function Invoke-InstallerTestProcess([string]$Executable, [string[]]$Arguments) 
 }
 
 $settings = Join-Path $fixture 'settings.ini'
-$settingsContents = "[installer-test]`nmarker=$identity`n"
+$settingsContents = '{"marker":"' + $identity + '"}'
 Set-Content -LiteralPath $settings -Value $settingsContents -Encoding ASCII -NoNewline
 $settingsHash = (Get-FileHash -LiteralPath $settings).Hash
 try {
@@ -42,13 +42,13 @@ try {
     $report = Join-Path $fixture 'startup.txt'
     Invoke-InstallerTestProcess $executable @('--startup-check', '--settings-file', "`"$settings`"", '--startup-report', "`"$report`"")
     if (!((Get-Content -LiteralPath $report) -contains "Application version: $Version")) { throw 'Installed version check failed.' }
-    if (!((Get-Content -LiteralPath $settings) -contains "marker=$identity")) { throw 'The separate settings marker was lost.' }
-    # The application may normalise QSettings on startup; installer operations must preserve that state.
+    if (!((Get-Content -LiteralPath $settings) -contains $settingsContents)) { throw 'The separate settings marker was lost.' }
+    # Startup checks and installer operations must preserve separate workspace data.
     $settingsHash = (Get-FileHash -LiteralPath $settings).Hash
     $query = Join-Path $installed 'user-query.sql'
     Set-Content -LiteralPath $query -Value "SELECT '$identity';" -Encoding ASCII
     $queryHash = (Get-FileHash -LiteralPath $query).Hash
-    $svgLibrary = Join-Path $installed 'Qt6Svg.dll'
+    $svgLibrary = Join-Path $installed 'libpq.dll'
     Remove-Item -LiteralPath $svgLibrary
     Invoke-InstallerTestProcess $setup @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/reinstall.log`"")
     if (!(Test-Path -LiteralPath $svgLibrary)) { throw 'Reinstallation did not restore an installed file.' }

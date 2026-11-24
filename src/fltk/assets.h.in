@@ -1,0 +1,7 @@
+#pragma once
+inline constexpr const char* appSvg = R"PGJRSVG(@PGADM_SVG@)PGJRSVG";
+inline constexpr const char* connectSvg = R"PGJRSVG(@PGADM_ICON_CONNECT@)PGJRSVG";
+inline constexpr const char* profileSvg = R"PGJRSVG(@PGADM_ICON_PROFILE@)PGJRSVG";
+inline constexpr const char* newSvg = R"PGJRSVG(@PGADM_ICON_NEW@)PGJRSVG";
+inline constexpr const char* runSvg = R"PGJRSVG(@PGADM_ICON_RUN@)PGJRSVG";
+inline constexpr const char* cancelSvg = R"PGJRSVG(@PGADM_ICON_CANCEL@)PGJRSVG";
