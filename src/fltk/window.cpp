@@ -135,6 +135,8 @@ QueryTab::~QueryTab()
 void QueryTab::applyTheme(const Theme &theme)
 {
     theme.apply(*this);
+    output->selection_color(theme.style("editor").background);
+    editor->linenumber_fgcolor(theme.style("cell", {"null"}).color);
     theme.apply(*target, "header");
     theme.apply(*splitter, "splitter");
     const auto editor_style = theme.style("editor");
@@ -486,15 +488,16 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
     action("View/Language/Deutsch", 0,
            [](Fl_Widget *, void *p) { static_cast<Window *>(p)->changeLanguage("de"); });
     action("Help/About", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->about(); });
-    connect_ = new Fl_Css_Button(css, 8, 34, 34, 34);
+    toolbar_ = new fltk_toolbar::Toolbar(8, 34, w() - 16, 34);
+    connect_ = new ToolButton(css, 8, 34, 34, 34);
     connect_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->connectProfile(); }, this);
-    auto *profileButton = new Fl_Css_Button(css, 46, 34, 34, 34);
+    auto *profileButton = new ToolButton(css, 46, 34, 34, 34);
     profileButton->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->editProfile(); }, this);
-    auto *newButton = new Fl_Css_Button(css, 98, 34, 34, 34);
+    auto *newButton = new ToolButton(css, 98, 34, 34, 34);
     newButton->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->newQuery(); }, this);
-    run_ = new Fl_Css_Button(css, 150, 34, 34, 34);
+    run_ = new ToolButton(css, 150, 34, 34, 34);
     run_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->execute(); }, this);
-    cancel_ = new Fl_Css_Button(css, 188, 34, 34, 34);
+    cancel_ = new ToolButton(css, 188, 34, 34, 34);
     cancel_->callback([](Fl_Widget *, void *p) { static_cast<Window *>(p)->cancelQuery(); }, this);
     tool_buttons_ = {connect_, profileButton, newButton, run_, cancel_};
     connect_->tooltip("Connect");
@@ -504,12 +507,13 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
     cancel_->tooltip("Cancel query");
     Fl_Tooltip::delay(0.4f);
     Fl_Tooltip::hoverdelay(0.1f);
-    for (int at : {88, 140})
-    {
-        auto *separator = new Fl_Box(at, 39, 1, 24);
-        separator->box(FL_FLAT_BOX);
-        separator->color(fl_rgb_color(170, 180, 190));
-    }
+    toolbar_->add_button(*connect_);
+    toolbar_->add_button(*profileButton);
+    toolbar_->separator();
+    toolbar_->add_button(*newButton);
+    toolbar_->separator();
+    toolbar_->add_button(*run_);
+    toolbar_->add_button(*cancel_);
     dock_ = new fltk_dock::Host(8, 74, w() - 16, h() - 104);
     tree_ = new ContextTree(8, 74, 260, h() - 104);
     tree_->showroot(0);
@@ -607,6 +611,7 @@ void Window::resize(int x, int y, int w, int h)
 {
     Fl_Css_Window::resize(x, y, w, h);
     menu_->resize(0, 0, w, 28);
+    toolbar_->resize(8, 34, w - 16, 34);
     dock_->resize(8, 74, w - 16, h - 104);
     status_->resize(8, h - 26, w - 16, 22);
     if (shown() && !maximize_active())
@@ -619,6 +624,13 @@ void Window::applyTheme()
     for (auto *window = Fl::first_window(); window; window = Fl::next_window(window))
         if (window != this)
             theme_.apply(*window);
+    for (auto *panel : {browser_panel_, library_panel_, history_panel_})
+        theme_.apply(*panel, "panel");
+    tabs_->selection_color(theme_.style("editor").background);
+    // Dock tab groups share the document surface rather than the selection accent.
+    for (int i = 0; i < dock_->children(); ++i)
+        if (auto *tabs = dynamic_cast<fltk_dock::Tabs *>(dock_->child(i)))
+            tabs->selection_color(theme_.style("editor").background);
     for (auto &tab : queries_)
         tab->applyTheme(theme_);
     const char *names[] = {"light", "dark", "classic"};
@@ -627,9 +639,6 @@ void Window::applyTheme()
                                            (theme_.name() == names[i] ? FL_MENU_VALUE : 0));
     const char *sources[] = {connectSvg, profileSvg, newSvg, runSvg, cancelSvg};
     const char *classes[] = {"connect", "profile", "new", "run", "cancel"};
-    for (auto *button : tool_buttons_)
-        button->image(nullptr);
-    icons_.clear();
     for (std::size_t i = 0; i < tool_buttons_.size(); ++i)
     {
         std::string source = sources[i];
@@ -645,9 +654,7 @@ void Window::applyTheme()
             const auto end = source.find('"', start + 8);
             source.replace(start + 8, end - start - 8, hex.str());
         }
-        Fl_SVG_Image svg(nullptr, source.c_str());
-        icons_.emplace_back(svg.copy(20, 20));
-        tool_buttons_[i]->image(icons_.back().get());
+        tool_buttons_[i]->svg(source);
     }
     redraw();
 }

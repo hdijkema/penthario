@@ -348,14 +348,23 @@ int main(int argc, char **argv)
         require(menu->find_item("Query/Saved queries/Manage...") && menu->find_item("View/Language/English"),
                 "Saved query management and language options are grouped");
         int icon_buttons = 0;
-        for (int n = 0; n < window.children(); ++n)
-            if (auto *button = dynamic_cast<Fl_Button *>(window.child(n)))
-                if (button->image())
-                {
-                    ++icon_buttons;
-                    require((!button->label() || !*button->label()) && button->tooltip(),
-                            "Toolbar buttons have an icon and tooltip without text");
-                }
+        std::function<void(Fl_Group &)> check_toolbar = [&](Fl_Group &group)
+        {
+            for (int n = 0; n < group.children(); ++n)
+            {
+                if (auto *button = dynamic_cast<Fl_Button *>(group.child(n)))
+                    if (button->image())
+                    {
+                        ++icon_buttons;
+                        require(
+                            (!button->label() || !*button->label()) && button->tooltip() && button->deimage(),
+                            "Toolbar buttons have owned normal/disabled icons and a tooltip without text");
+                    }
+                if (auto *child = group.child(n)->as_group())
+                    check_toolbar(*child);
+            }
+        };
+        check_toolbar(window);
         require(icon_buttons == 5, "All five toolbar actions remain available");
         tab->output->value(tab->plan_panel);
         Fl::check();
@@ -509,10 +518,8 @@ int main(int argc, char **argv)
             require(geometry.at("maximized") == true && geometry.at("w") == saved_layout.at("window").at("w"),
                     "A pending maximize preserves the normal window size");
         }
-        require(saved_workspace.at("tabs").at(0).at("widths").at(0) == 280,
-                "Workspace width persistence");
-        require(saved_workspace.at("tabs").at(0).at("split").get<double>() ==
-                    tab->splitRatio(),
+        require(saved_workspace.at("tabs").at(0).at("widths").at(0) == 280, "Workspace width persistence");
+        require(saved_workspace.at("tabs").at(0).at("split").get<double>() == tab->splitRatio(),
                 "Query splitter position is persisted");
         std::cout << "FLTK UI contracts passed; rendered " << (directory / "fltk-results.png").u8string()
                   << '\n';

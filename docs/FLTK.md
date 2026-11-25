@@ -1,7 +1,8 @@
 # FLTK implementation
 
 The default build is a native C++17/FLTK application. It uses fltk-css for
-styling, fltk-cell for table rendering, STL data structures, libpq for database
+styling, fltk-cell for table rendering, fltk-toolbar for buttons and SVG images,
+STL data structures, libpq for database
 sessions and a small libxlsxwriter wrapper for XLSX output.
 
 ## Available functionality

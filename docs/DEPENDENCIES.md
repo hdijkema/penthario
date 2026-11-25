@@ -3,9 +3,10 @@
 | Component | Selected release | Purpose |
 | --- | --- | --- |
 | FLTK | 1.4.5 (`release-1.4.5`) | Native widgets, drawing, SVG |
-| fltk-css | 0.1.0 (`v0.1.0`) | Styles |
+| fltk-css | 0.1.1 (`v0.1.1`) | Styles and native widget property mapping |
 | fltk-cell | 0.1.0 (`v0.1.0`) | Typed cell drawers/editors |
 | fltk-dock | 0.1.0 (`v0.1.0`) | Dockable tool windows and rectangular tabs |
+| fltk-toolbar | 0.1.0 (`v0.1.0`) | Toolbar layout and SVG buttons |
 | nlohmann/json | 3.12.0 | Workspace and metadata |
 | hrantzsch/keychain | 1.3.1 | Windows Credential Manager, macOS Keychain, Linux Secret Service |
 | libxlsxwriter | 1.2.4 | XLSX output |
@@ -24,10 +25,10 @@ changes; builds do not silently choose whatever happens to be newest that day.
 
 ## Published library tags
 
-The fltk-css, fltk-cell, fltk-dock and fltk-trayicon `v0.1.0` tags have been
-published. The fltk-dock tag identifies commit
+The selected releases are fltk-css `v0.1.1` and fltk-cell, fltk-dock and
+fltk-toolbar `v0.1.0`. The fltk-dock tag identifies commit
 `8ca3e3456ebb7821e7cdb77b0e1599d6566eec61`. Application builds can fetch all
-three widget dependencies by release tag; fltk-trayicon remains independent.
+widget dependencies by release tag; fltk-trayicon remains independent.
 Publish and validate library tags before selecting them in application builds.
 
 ## Remote verification: 24 November 2026
@@ -50,7 +51,8 @@ remain subject to their hosted runners.
 ## Local development
 
 Local development uses explicit `PGADM_FLTK_CELL_SOURCE_DIR`,
-`FLTK_CELL_CSS_SOURCE_DIR` and `PGADM_FLTK_DOCK_SOURCE_DIR` paths. Empty paths mean installed packages or tagged
+`FLTK_CELL_CSS_SOURCE_DIR`, `PGADM_FLTK_DOCK_SOURCE_DIR` and
+`PGADM_FLTK_TOOLBAR_SOURCE_DIR` paths. Empty paths mean installed packages or tagged
 release downloads. Invalid nonempty overrides fail instead of silently falling
 back. `build-fltk.cmd` selects the sibling checkouts explicitly.
 

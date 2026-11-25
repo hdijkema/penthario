@@ -53,9 +53,11 @@ system appearance.
 ## Development
 
 `Theme::load` parses the base stylesheet plus optional overrides before changing
-the FLTK palette. `Theme::apply` maps styles onto native widget properties;
+the FLTK palette. `Theme::apply` delegates native widget properties to fltk-css;
 `Window::applyTheme` updates dock panels, toolbar SVGs and each query tab's syntax
 colors. Result cells resolve their own fltk-cell styles from the same stylesheet.
+Toolbar layout and SVG image ownership are supplied by fltk-toolbar. Icon color
+selection remains application-specific.
 
 Edit `translations/fltk-ui.json` directly for interface translations. Source keys
 are English, with Dutch and German values. `tests/check-translations.py` checks

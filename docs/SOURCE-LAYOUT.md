@@ -18,6 +18,11 @@ The current application is in `src/fltk/`:
 | i18n | Embedded native translation catalog |
 | theme, themes.h.in | Embedded CSS themes, custom stylesheets and native widget styling |
 
+Generic native widget styling lives in fltk-css. Toolbar layout and SVG image
+ownership live in fltk-toolbar. The application binds commands, selects icon
+colors and supplies its own theme files; those libraries do not depend on
+PostgreSQL or the workspace format.
+
 `cmake/FltkApplication.cmake` defines the active targets and dependencies;
 `FltkLinuxPackaging.cmake` defines the native DEB and `Xlsx.cmake` the export
 dependencies. `assets/` holds icons/notices, `translations/fltk-ui.json` the UI

@@ -10,7 +10,7 @@ Use Visual Studio 2022 C++ tools, CMake and Ninja. The local scripts discover
 Visual Studio with vswhere. `PGADM_CMAKE` and `PGADM_NINJA` override tool paths;
 the defaults use CMake and Ninja from PATH.
 
-For sibling pgadmin-jr/fltk-cell/fltk-css development checkouts:
+For sibling pgadmin-jr/fltk-cell/fltk-css/fltk-dock/fltk-toolbar development checkouts:
 
 ```powershell
 .\build-fltk.cmd -DFLTK_DIR=C:/path/to/FLTK/CMake
@@ -51,9 +51,15 @@ designed dimensions. Layouts are selected at startup and captured when saving;
 monitor hot-plug does not rearrange an active workspace automatically.
 
 Appearance is handled by `Theme`, which loads embedded CSS and optional local
-overrides, updates the FLTK palette and applies native widget properties.
+overrides. Native property mapping and the shared palette are supplied by
+`FLTK_Css::apply` and `apply_palette`. The application retains its theme policy.
 `Window::applyTheme` refreshes dock panels, toolbar SVGs and each tab's syntax
 colors. See [themes](THEMES.md) for selectors and the editable translation catalog.
+
+`fltk-toolbar::Toolbar` owns and places the toolbar buttons and separators.
+`Fl_Css_Widget<fltk_toolbar::SvgButton>` adds CSS painting to SVG buttons without
+making fltk-toolbar depend on CSS. SVG image ownership and disabled images belong
+to the toolbar library; pgadmin-jr chooses icon colors and binds commands.
 
 Each Session owns its libpq connection on one worker. The GUI consumes bounded
 event batches, discarding stale execution generations. Catalog and administrative

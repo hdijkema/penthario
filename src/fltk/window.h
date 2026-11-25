@@ -12,6 +12,8 @@
 #include <FL/Fl_Tree.H>
 #include <FL/Fl_Tabs.H>
 #include <fltk_dock.h>
+#include <fltk_toolbar.h>
+#include <fltk_toolbar_svg.h>
 #include <FL/Fl_Text_Editor.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Check_Button.H>
@@ -21,6 +23,7 @@
 
 namespace pgjr
 {
+using ToolButton = Fl_Css_Widget<fltk_toolbar::SvgButton>;
 class Window;
 struct QueryTab : Fl_Group
 {
@@ -116,7 +119,8 @@ class Window : public Fl_Css_Window
     Theme theme_;
     void applyTheme();
     std::array<int, 3> theme_actions_{};
-    std::vector<Fl_Button *> tool_buttons_;
+    std::vector<ToolButton *> tool_buttons_;
+    fltk_toolbar::Toolbar *toolbar_;
     QueryTab *current();
     Profile *profile(const std::string &);
     bool ensureSession(QueryTab &, bool interactive = true);
@@ -139,7 +143,7 @@ class Window : public Fl_Css_Window
     std::vector<Json> history_;
     std::vector<SavedQuery> library_cache_;
     Fl_Box *status_;
-    Fl_Css_Button *connect_, *run_, *cancel_;
+    ToolButton *connect_, *run_, *cancel_;
     std::filesystem::path settings_;
     std::vector<Profile> profiles_;
     std::map<std::string, std::string> secrets_;
@@ -163,6 +167,5 @@ class Window : public Fl_Css_Window
     Json layouts_ = Json::object(), dialogs_ = Json::object(), normal_rectangle_ = Json::object();
     void refreshCatalog();
     void updateTarget(QueryTab &);
-    std::vector<std::unique_ptr<Fl_Image>> icons_;
 };
 } // namespace pgjr

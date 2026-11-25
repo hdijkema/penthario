@@ -150,11 +150,12 @@ class ReleaseAssetsTest(unittest.TestCase):
         # Offline builds must stage every widget library, including docking.
         for library, option in (("fltk-css", "FLTK_CELL_CSS_SOURCE_DIR"),
                                 ("fltk-cell", "PGADM_FLTK_CELL_SOURCE_DIR"),
-                                ("fltk-dock", "PGADM_FLTK_DOCK_SOURCE_DIR")):
+                                ("fltk-dock", "PGADM_FLTK_DOCK_SOURCE_DIR"),
+                                ("fltk-toolbar", "PGADM_FLTK_TOOLBAR_SOURCE_DIR")):
             with self.subTest(library=library):
                 source = next(item for item in application["sources"]
                               if item.get("dest") == f"vendor/{library}")
-                self.assertEqual(source["tag"], "v0.1.0")
+                self.assertEqual(source["tag"], "v0.1.1" if library == "fltk-css" else "v0.1.0")
                 self.assertIn(f"-D{option}=/run/build/pgadmin-jr/vendor/{library}",
                               application["config-opts"])
         prepare("", output)

@@ -4,7 +4,8 @@ The main `.github/workflows/build.yml` builds the native FLTK application in
 Release mode. Windows uses MSVC, Debian uses GCC, and macOS uses Apple Clang.
 Native build dependencies and the first source-release order are in
 [DEPENDENCIES.md](DEPENDENCIES.md). Clean application builds require published
-`v0.1.0` tags for fltk-css, fltk-cell and fltk-dock. A local source override can
+fltk-css `v0.1.1` and `v0.1.0` tags for fltk-cell, fltk-dock and fltk-toolbar.
+A local source override can
 hide a missing remote tag; it does not establish that a hosted build can fetch it.
 
 ## Jobs

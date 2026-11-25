@@ -77,7 +77,8 @@
         "-DFETCHCONTENT_SOURCE_DIR_FLTK_JSON=/run/build/pgadmin-jr/vendor/json",
         "-DFETCHCONTENT_SOURCE_DIR_FLTK_KEYCHAIN=/run/build/pgadmin-jr/vendor/keychain",
         "-DFETCHCONTENT_SOURCE_DIR_ZLIB=/run/build/pgadmin-jr/vendor/zlib",
-        "-DFETCHCONTENT_SOURCE_DIR_LIBXLSXWRITER=/run/build/pgadmin-jr/vendor/libxlsxwriter"
+        "-DFETCHCONTENT_SOURCE_DIR_LIBXLSXWRITER=/run/build/pgadmin-jr/vendor/libxlsxwriter",
+        "-DPGADM_FLTK_TOOLBAR_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-toolbar"
       ],
       "sources": [
         {
@@ -114,7 +115,7 @@
         {
           "type": "git",
           "url": "https://github.com/hdijkema/fltk-css.git",
-          "tag": "v0.1.0",
+          "tag": "v0.1.1",
           "dest": "vendor/fltk-css"
         },
         {
@@ -140,6 +141,12 @@
           "url": "https://github.com/hrantzsch/keychain.git",
           "tag": "v1.3.1",
           "dest": "vendor/keychain"
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/hdijkema/fltk-toolbar.git",
+          "tag": "v0.1.0",
+          "dest": "vendor/fltk-toolbar"
         }
       ],
       "no-make-install": true,
