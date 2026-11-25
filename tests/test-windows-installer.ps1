@@ -3,13 +3,26 @@
 param(
     [Parameter(Mandatory = $true)][string]$SourceDirectory,
     [Parameter(Mandatory = $true)][string]$InnoCompiler,
-    [Parameter(Mandatory = $true)][string]$Version
+    [Parameter(Mandatory = $true)][string]$Version,
+    [ValidateSet('CurrentUser', 'AllUsers')][string]$InstallScope = 'CurrentUser'
 )
 $ErrorActionPreference = 'Stop'
+$scopeArgument = '/CURRENTUSER'
+if ($InstallScope -eq 'AllUsers') {
+    $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
+    if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw 'The AllUsers installer test requires an elevated PowerShell session.'
+    }
+    $scopeArgument = '/ALLUSERS'
+}
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $SourceDirectory = (Resolve-Path -LiteralPath $SourceDirectory).Path
 $InnoCompiler = (Resolve-Path -LiteralPath $InnoCompiler).Path
 $identity = [guid]::NewGuid().ToString('N')
+# Keep the private AppId short so Inno does not shorten its uninstall registry key.
+$installerAppId = "pgadmin-jr.Test.$identity"
+$uninstallRoot = if ($InstallScope -eq 'AllUsers') { 'HKLM:' } else { 'HKCU:' }
+$uninstallKey = "$uninstallRoot\Software\Microsoft\Windows\CurrentVersion\Uninstall\${installerAppId}_is1"
 $fixture = Join-Path $project "build/Release/installer-test-$identity"
 $installed = [System.IO.Path]::GetFullPath((Join-Path $fixture 'Application'))
 $buildRoot = [System.IO.Path]::GetFullPath((Join-Path $project 'build')) + [System.IO.Path]::DirectorySeparatorChar
@@ -17,7 +30,7 @@ if (!$installed.StartsWith($buildRoot, [System.StringComparison]::OrdinalIgnoreC
 New-Item -ItemType Directory -Path $fixture | Out-Null
 $script = Join-Path $project 'packaging/windows/pgadmin-jr.iss'
 & $InnoCompiler '/Q' "/DAppVersion=$Version" "/DSourceDirectory=$SourceDirectory" "/DOutputDirectory=$fixture" `
-    "/DInstallerAppId=io.github.hdijkema.AltPgAdmin.Test.$identity" "/DInstallerName=pgadmin-jr Installer Test $identity" $script
+    "/DInstallerAppId=$installerAppId" "/DInstallerName=pgadmin-jr Installer Test $identity" $script
 if ($LASTEXITCODE -ne 0) { throw 'Private test installer compilation failed.' }
 $setup = Join-Path $fixture "pgadmin-jr-$Version-windows-x64-setup.exe"
 
@@ -33,9 +46,10 @@ $settingsContents = '{"marker":"' + $identity + '"}'
 Set-Content -LiteralPath $settings -Value $settingsContents -Encoding ASCII -NoNewline
 $settingsHash = (Get-FileHash -LiteralPath $settings).Hash
 try {
-    Invoke-InstallerTestProcess $setup @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/install.log`"")
+    Invoke-InstallerTestProcess $setup @($scopeArgument, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/install.log`"")
     $executable = Join-Path $installed 'pgadmin-jr.exe'
     if (!(Test-Path -LiteralPath $executable)) { throw 'The application was not installed.' }
+    if (!(Test-Path -LiteralPath $uninstallKey)) { throw 'Uninstall registration does not match the selected install scope.' }
     if ((Get-FileHash -LiteralPath $executable).Hash -ne (Get-FileHash -LiteralPath (Join-Path $SourceDirectory 'pgadmin-jr.exe')).Hash) {
         throw 'Installed application differs from the validated portable application.'
     }
@@ -50,7 +64,7 @@ try {
     $queryHash = (Get-FileHash -LiteralPath $query).Hash
     $svgLibrary = Join-Path $installed 'libpq.dll'
     Remove-Item -LiteralPath $svgLibrary
-    Invoke-InstallerTestProcess $setup @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/reinstall.log`"")
+    Invoke-InstallerTestProcess $setup @($scopeArgument, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/reinstall.log`"")
     if (!(Test-Path -LiteralPath $svgLibrary)) { throw 'Reinstallation did not restore an installed file.' }
     if ((Get-FileHash -LiteralPath $query).Hash -ne $queryHash) { throw 'Reinstallation changed an untracked query file.' }
 } finally {
@@ -60,6 +74,7 @@ try {
     }
 }
 if (Test-Path -LiteralPath (Join-Path $installed 'pgadmin-jr.exe')) { throw 'Uninstallation left the application executable.' }
+if (Test-Path -LiteralPath $uninstallKey) { throw 'Uninstallation left its private registration.' }
 if ((Get-FileHash -LiteralPath $query).Hash -ne $queryHash) { throw 'Uninstallation removed or changed the untracked query file.' }
 if ((Get-FileHash -LiteralPath $settings).Hash -ne $settingsHash) { throw 'Installation or removal changed separate settings.' }
-Write-Output "Installer install/reinstall/startup/uninstall checks passed: $fixture"
+Write-Output "Installer $InstallScope install/reinstall/startup/uninstall checks passed: $fixture"

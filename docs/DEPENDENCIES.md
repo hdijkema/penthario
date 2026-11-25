@@ -1,3 +1,7 @@
+---
+title: Dependencies and releases
+---
+
 # Dependencies and releases
 
 | Component | Selected release | Purpose |

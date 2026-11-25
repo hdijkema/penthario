@@ -141,7 +141,7 @@ kbd { padding: .05rem .3rem; border: 1px solid var(--kbd-border); border-bottom-
   .site-header, main, .site-footer { width: min(100% - 2rem, 36rem); }
   .site-header { flex-wrap: wrap; gap: 1rem; }
   .brand { gap: .45rem; font-size: 1.2rem; }
-  nav { width: 100%; justify-content: space-between; gap: .9rem; margin-left: 0; }
+  nav { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: .6rem .9rem; margin-left: 0; }
   .theme-toggle { margin-left: auto; }
   nav a { font-size: .75rem; }
   .hero { grid-template-columns: 1fr; gap: 2.5rem; padding-block: 3rem; }

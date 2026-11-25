@@ -1,3 +1,7 @@
+---
+title: Themes and custom CSS
+---
+
 # Themes and custom CSS
 
 Choose **View → Theme → Light, Dark or Classic** to change the application's

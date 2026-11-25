@@ -1,3 +1,7 @@
+---
+title: Linux packaging
+---
+
 # Linux packaging
 
 The native Linux build uses FLTK/X11, libpq and libsecret.

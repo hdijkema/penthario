@@ -1,3 +1,7 @@
+---
+title: FLTK implementation
+---
+
 # FLTK implementation
 
 The default build is a native C++17/FLTK application. It uses fltk-css for

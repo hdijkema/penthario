@@ -1,3 +1,7 @@
+---
+title: macOS packaging
+---
+
 # macOS packaging
 
 The native workflow builds an Apple Silicon arm64 application for macOS 15 or

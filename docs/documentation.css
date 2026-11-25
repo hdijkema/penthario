@@ -1,0 +1,34 @@
+/* Markdown pages share the homepage's typography, palette and theme control. */
+.docs-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 4rem; padding-block: 2.5rem 4rem; }
+.docs-content { min-width: 0; }
+.back-link { margin-bottom: 2rem; font-size: .85rem; }
+.back-link a { text-decoration: none; }
+.documentation { overflow-wrap: anywhere; }
+.documentation h1 { margin-bottom: 2rem; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; }
+.documentation h2 { margin-top: 2.5rem; font-size: 1.6rem; }
+.documentation h3 { margin-top: 2rem; font-size: 1.2rem; }
+.documentation h4 { margin-top: 1.5rem; }
+.documentation p, .documentation li { color: var(--muted); }
+.documentation strong, .documentation a { color: var(--text); }
+.documentation a:hover { color: var(--accent); }
+.documentation li { margin-block: .4rem; }
+.documentation ul, .documentation ol { padding-left: 1.5rem; }
+.documentation pre { margin-block: 1.3rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); font-size: .82rem; line-height: 1.7; }
+.documentation :not(pre) > code { padding: .1rem .3rem; border-radius: 3px; background: var(--surface-muted); color: var(--text); font-size: .9em; }
+.documentation table { display: block; max-width: 100%; margin-block: 1.5rem; overflow-x: auto; font-family: inherit; font-size: .88rem; }
+.documentation th, .documentation td { padding: .65rem .8rem; }
+.documentation blockquote { margin-inline: 0; padding-left: 1.2rem; border-left: 3px solid var(--accent); }
+.documentation hr { margin-block: 2rem; border: 0; border-top: 1px solid var(--line); }
+.documentation .highlight .c, .documentation .highlight .c1, .documentation .highlight .cm { color: var(--muted); }
+.documentation .highlight .k, .documentation .highlight .kd, .documentation .highlight .kn { color: var(--accent); font-weight: 600; }
+.doc-sidebar { position: sticky; top: 2rem; align-self: start; padding-left: 1.5rem; border-left: 1px solid var(--line); }
+.doc-sidebar h2 { margin-bottom: 1rem; font-size: 1rem; letter-spacing: 0; }
+.doc-sidebar ul { margin: 0; padding: 0; list-style: none; }
+.doc-sidebar a { display: block; padding-block: .4rem; color: var(--muted); font-size: .85rem; text-decoration: none; }
+.doc-sidebar a:hover, .doc-sidebar a[aria-current="page"] { color: var(--accent); }
+.doc-sidebar a[aria-current="page"] { font-weight: 700; }
+.document-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .85rem; }
+@media (max-width: 900px) {
+  .docs-layout { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+  .doc-sidebar { position: static; padding: 1.5rem 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}

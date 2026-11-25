@@ -1,3 +1,7 @@
+---
+title: Validation report
+---
+
 # Local validation: 23 November 2026
 
 Host: Windows x64, MSVC 2022, Release, FLTK 1.4.5. Local sibling library
@@ -87,3 +91,28 @@ Local asset references and matching application logo/favicon copies were checked
 
 GitHub Pages settings, remote publication and native macOS/Linux execution were
 not changed or validated by these checks.
+
+## 25 November 2026: generated documentation and installer scopes
+
+The website built locally with Jekyll 3.10.0, Kramdown 2.4.0,
+jekyll-relative-links 0.6.1 and jekyll-optional-front-matter 0.3.2. The ten source
+guides produced HTML pages with shared light/dark styling, sidebar navigation,
+source links and links back to the homepage. All 278 local references, assets
+and anchors across the eleven HTML pages passed checks. An isolated extra
+Markdown file without front matter also received the layout and a sidebar entry.
+
+Headless Chrome served the actual generated output over local HTTP. All eleven
+pages passed narrow-screen overflow, image and navigation checks at 320 pixels.
+The documentation was also rendered and visually inspected in light/dark mode
+at 390 and 1440 pixels; the preference persisted between guide pages.
+
+The Windows 0.4.1 Release build and all four CTest tests passed. Inno Setup 7.1.1
+compiled the installer with current-user/all-users selection and mode-dependent
+paths. An isolated current-user test passed install/reinstall/startup/uninstall,
+checked HKCU registration and preserved separate settings and an untracked query.
+The private test identity is kept short to avoid Inno's registry-key shortening.
+Actual all-users installation was not run: this session is not elevated.
+
+No GitHub Pages settings or remote deployments were changed. The preview server
+and browser were stopped; website build tools remain in the ignored local build
+directory and are not application dependencies.

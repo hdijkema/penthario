@@ -1,3 +1,7 @@
+---
+title: Source layout
+---
+
 # Source layout
 
 The current application is in `src/fltk/`:

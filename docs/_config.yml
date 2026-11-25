@@ -1,0 +1,22 @@
+title: pgadmin-jr
+url: https://hdijkema.github.io
+baseurl: /pgadmin-jr
+repository_url: https://github.com/hdijkema/pgadmin-jr
+markdown: kramdown
+kramdown:
+  input: GFM
+plugins:
+  - jekyll-optional-front-matter
+  - jekyll-relative-links
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: documentation
+  - scope:
+      path: index.html
+    values:
+      layout: null
+exclude:
+  - assets/README.md

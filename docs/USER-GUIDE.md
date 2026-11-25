@@ -1,4 +1,22 @@
+---
+title: User guide
+---
+
 # User guide
+
+## Windows installation
+
+The installer offers installation for the current user or for all users.
+The current-user mode is the default and uses
+`%LOCALAPPDATA%\Programs\pgadmin-jr`; all-users mode requests administrator
+rights and defaults to `C:\Program Files\pgadmin-jr`. Start-menu and optional
+desktop shortcuts follow the selected scope. Workspace files and credentials
+remain private to each user in either mode.
+
+For unattended installation, select the scope explicitly with `/CURRENTUSER`
+or `/ALLUSERS`. Updates normally reuse the previous installation scope and
+directory. An explicit scope switch is a separate installation, not a migration
+or removal of the other scope. The portable ZIP remains an alternative.
 
 ## Connecting
 

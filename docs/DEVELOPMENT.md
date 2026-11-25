@@ -1,3 +1,7 @@
+---
+title: Development
+---
+
 # Development
 
 The root CMake project builds the FLTK application by default. It requires a
@@ -102,20 +106,44 @@ placement. Until the first fltk-dock source tag is published, configure with
 
 ## Project homepage and About dialog
 
-`docs/index.html` and its local stylesheets form a buildless, self-contained GitHub
-Pages homepage. Its logo and favicon are copies of `assets/icons/pgadmin-jr.svg`
+`docs/index.html` and its local stylesheets form the GitHub Pages homepage.
+Jekyll converts the Markdown guides alongside it into HTML, using
+`docs/_config.yml` and `docs/_layouts/documentation.html`. The documentation
+layout supplies navigation, links back to the homepage and the same theme
+control. Its logo and favicon are copies of `assets/icons/pgadmin-jr.svg`
 and `assets/icons/pgadmin-jr.ico` under `docs/assets/`; refresh those copies when
 the application branding changes. The site uses system fonts and no third-party
 services. `dark.css` follows the system preference without JavaScript; the small
 `theme.js` control allows a manual override and remembers it in local browser
 storage when available. The racing elephant illustration is recovered from the
-original artwork; provenance is recorded in `docs/assets/README.md`. Preview by
-opening `docs/index.html` in a browser.
+original artwork; provenance is recorded in `docs/assets/README.md`.
 
 To publish at <https://hdijkema.github.io/pgadmin-jr/>, select **Deploy from a
 branch** in the repository's **Settings > Pages**, then choose the default
-branch and `/docs`. `docs/.nojekyll` keeps the files as plain static content.
-Application release workflows do not need to build or deploy the homepage.
+branch and `/docs`. There is no `.nojekyll` marker: GitHub runs its built-in
+Jekyll build on publication. Application release workflows do not need to build
+or deploy the website.
+
+Markdown files remain the documentation source, with a small YAML title header.
+`jekyll-relative-links` converts their existing `.md` cross-references to HTML
+links, including anchors. The default layout and `jekyll-optional-front-matter`
+also cover new Markdown pages without a header; the sidebar lists those pages
+automatically. `assets/README.md` is source-only artwork information and is
+excluded. The hand-written homepage has no documentation wrapper.
+
+For local website builds, use Jekyll 3.10 and its `jekyll-relative-links`,
+`jekyll-optional-front-matter` and `kramdown-parser-gfm` gems. These are website
+tools, not application dependencies. From the repository root:
+
+```sh
+jekyll build --source docs --destination build/pages/pgadmin-jr
+python -m http.server 8000 --directory build/pages
+```
+
+Open `http://localhost:8000/pgadmin-jr/`. The destination deliberately includes
+the configured `/pgadmin-jr` base path so local asset and documentation URLs
+match GitHub Pages. Opening `docs/index.html` directly still previews the home
+page, but its generated guide links require the Jekyll build.
 
 `Window::about` keeps the application logo and uses FLTK's `Fl_Help_View` for
 the fixed HTTPS homepage link. FLTK supplies link hit-testing, the hand cursor

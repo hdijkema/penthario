@@ -4,3 +4,6 @@
 /third_party/
 CMakeLists.txt.user*
 __pycache__/
+/docs/.jekyll-cache/
+/docs/.jekyll-metadata
+/docs/.sass-cache/

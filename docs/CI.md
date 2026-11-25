@@ -1,3 +1,7 @@
+---
+title: GitHub Actions and releases
+---
+
 # GitHub Actions and releases
 
 The main `.github/workflows/build.yml` builds the native FLTK application in
@@ -28,6 +32,10 @@ macOS jobs. Flatpak already disables application tests. Noninteractive tests hav
 a 60-second timeout; local UI tests have a 120-second timeout.
 
 Normal tests need no database, production credentials or signing secrets.
+The isolated Windows installer check explicitly selects `/CURRENTUSER`, so the
+scope-selection dialog cannot stall a silent job. Administrators can run
+`tests/test-windows-installer.ps1` with `-InstallScope AllUsers` from an elevated
+shell to exercise machine-wide installation under a private test identity.
 The disposable local PostgreSQL integration runner is not a hosted CI service.
 Reports are Actions artifacts, separate from distributable packages. Other
 platforms must be validated by their hosted runners; local Windows success is
