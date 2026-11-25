@@ -1,5 +1,6 @@
 ---
 title: Linux packaging
+description: "Install and package pgadmin-jr for Debian and compatible Linux desktops, including ARM64 and Flatpak."
 ---
 
 # Linux packaging

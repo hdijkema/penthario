@@ -1,5 +1,6 @@
 ---
 title: Validation report
+description: "Local build, packaging, PostgreSQL and interface validation results for pgadmin-jr, including platform limits."
 ---
 
 # Local validation: 23 November 2026

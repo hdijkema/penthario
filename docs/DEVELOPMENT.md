@@ -1,5 +1,6 @@
 ---
 title: Development
+description: "Build and test pgadmin-jr, and understand its native FLTK interface, PostgreSQL sessions and data flow."
 ---
 
 # Development
@@ -154,6 +155,31 @@ the configured `/pgadmin-jr` base path so local asset and documentation URLs
 match GitHub Pages. Preview the generated site: the source `docs/index.html`
 contains Liquid markup for the documentation list and is not a standalone HTML
 preview.
+
+### Search discovery and Google verification
+
+`_includes/seo.html` supplies page titles, descriptions, canonical URLs and
+Open Graph/social preview metadata. The homepage also describes the project as
+a SoftwareApplication using JSON-LD. Guide descriptions live in Markdown front
+matter; `_config.yml` supplies the fallback description and preview image.
+
+Jekyll generates `sitemap.xml` from the homepage and Markdown documentation,
+using the configured HTTPS host and `/pgadmin-jr` base path. Assets and Google
+verification files are not sitemap entries. No additional Jekyll plugins are
+required. After publication, submit this URL in Google Search Console:
+
+<https://hdijkema.github.io/pgadmin-jr/sitemap.xml>
+
+Google HTML verification files in `docs/google*.html` are copied byte-for-byte.
+Use the URL-prefix property `https://hdijkema.github.io/pgadmin-jr/` in Search
+Console, and retain the verification file after verification succeeds.
+
+Robots rules belong at `https://hdijkema.github.io/robots.txt`, outside this
+project site's publishing root. A `/pgadmin-jr/robots.txt` file would not control
+crawling. No robots file is needed to allow crawling; if the domain-root site
+already has one, its owner can add the sitemap URL while preserving existing
+rules. This repository does not change that separate site. See Google's
+[robots.txt location requirements](https://developers.google.com/crawling/docs/robots-txt/create-robots-txt).
 
 `Window::about` keeps the application logo and uses FLTK's `Fl_Help_View` for
 the fixed HTTPS homepage link. FLTK supplies link hit-testing, the hand cursor

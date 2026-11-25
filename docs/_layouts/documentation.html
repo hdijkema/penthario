@@ -4,8 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102c49">
-  <title>{{ page.title | default: page.name | remove: '.md' | escape }} — pgadmin-jr</title>
-  <link rel="canonical" href="{{ page.url | absolute_url }}">
+  {% include seo.html %}
   <link rel="icon" href="{{ '/assets/pgadmin-jr.svg' | relative_url }}" type="image/svg+xml">
   <link rel="icon" href="{{ '/assets/pgadmin-jr.ico' | relative_url }}" sizes="any">
   <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">

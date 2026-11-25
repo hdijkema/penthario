@@ -1,5 +1,6 @@
 ---
 title: FLTK implementation
+description: "Features, limits and workspace migration for the native C++ and FLTK implementation of pgadmin-jr."
 ---
 
 # FLTK implementation

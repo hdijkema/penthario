@@ -1,5 +1,6 @@
 ---
 title: Themes and custom CSS
+description: "Choose light, dark or classic themes and customise pgadmin-jr with local CSS overrides."
 ---
 
 # Themes and custom CSS

@@ -1,5 +1,6 @@
 ---
 title: Source layout
+description: "Find the application, database, interface, test and packaging sources in the pgadmin-jr repository."
 ---
 
 # Source layout

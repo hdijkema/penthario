@@ -1,5 +1,6 @@
 ---
 title: User guide
+description: "Connect to PostgreSQL, browse objects, write SQL and export query results with pgadmin-jr."
 ---
 
 # User guide

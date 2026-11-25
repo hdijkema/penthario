@@ -1,5 +1,6 @@
 ---
 title: Dependencies and releases
+description: "Libraries, selected releases and source repositories used to build pgadmin-jr."
 ---
 
 # Dependencies and releases

@@ -1,0 +1,14 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>{{ '/' | absolute_url | xml_escape }}</loc></url>
+  {% assign documents = site.pages | where: 'layout', 'documentation' | sort: 'name' %}
+  {% for document in documents %}
+  {% assign extension = document.name | split: '.' | last %}
+  {% if extension == 'md' or extension == 'markdown' %}
+  <url><loc>{{ document.url | absolute_url | xml_escape }}</loc></url>
+  {% endif %}
+  {% endfor %}
+</urlset>

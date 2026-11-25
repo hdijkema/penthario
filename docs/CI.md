@@ -1,5 +1,6 @@
 ---
 title: GitHub Actions and releases
+description: "How pgadmin-jr builds Windows, Linux and macOS packages with GitHub Actions and publishes versioned releases."
 ---
 
 # GitHub Actions and releases

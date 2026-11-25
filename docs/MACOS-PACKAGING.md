@@ -1,5 +1,6 @@
 ---
 title: macOS packaging
+description: "Install and package the Apple Silicon macOS DMG for pgadmin-jr, including signing and validation notes."
 ---
 
 # macOS packaging
