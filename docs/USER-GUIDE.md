@@ -98,7 +98,15 @@ existing transaction. Sequences and external effects are not reversible.
 ## Administration
 
 Use the database/object context menu for backup, restore, properties, maintenance
-and database creation/deletion. Backups use pg_dump; archives restore with
+and database creation/deletion. **Rename database...** is available when a database
+is selected. Enter the new name and a different maintenance database. Renaming
+closes this profile's idle sessions to the target database, rolling back open
+transactions; stop running queries first. Connections from other clients or profiles
+are not forced closed. PostgreSQL checks ownership and permissions. After success,
+the browser reloads and this profile's query tabs and maintenance database setting
+follow the new name. Scripts and custom tab names are preserved.
+
+Backups use pg_dump; archives restore with
 pg_restore, SQL files with psql. Restore stops on the first error and uses a single
 transaction. Inspect the log, not just elapsed time. Cancellation can take time
 while a tool/server finishes its current work.

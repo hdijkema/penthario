@@ -544,6 +544,103 @@ void Window::refreshCatalog()
         }
     tree_->redraw();
 }
+// PostgreSQL cannot rename the connected database. Use another database and leave
+// foreign clients alone; PostgreSQL reports any remaining connections or privilege errors.
+void Window::renameDatabase()
+{
+    auto selected = nodes_.find(tree_->first_selected_item());
+    if (selected == nodes_.end() || selected->second.kind != 1)
+    {
+        fl_alert("%s", tr("Select a database first."));
+        return;
+    }
+    const auto node = selected->second;
+    auto *p = profile(node.profile);
+    if (!p)
+        return;
+    const auto connection = *p;
+    auto maintenance = connection.database;
+    if (maintenance == node.database)
+        maintenance = node.database == "postgres" ? "template1" : "postgres";
+    Form form("Rename database", dialogs_, *this);
+    form.note("Server: " + connection.host + ":" + connection.port + " | Database: " + node.database);
+    auto *name = form.input("New database name", node.database);
+    auto *other = form.input("Maintenance database", maintenance);
+    form.note("Own connections to this database will close and open transactions will roll back. "
+              "Other clients are not disconnected.");
+    if (!form.run())
+        return;
+    const std::string next = name->value();
+    maintenance = other->value();
+    if (next == node.database)
+        return;
+    try
+    {
+        const auto sql = renameDatabaseSql(node.database, next);
+        auto error = nameError(maintenance);
+        if (!error.empty())
+            throw std::runtime_error(error);
+        if (maintenance == node.database)
+        {
+            fl_alert("%s", tr("Choose a different maintenance database for renaming."));
+            return;
+        }
+        if (catalog_wait_)
+        {
+            fl_alert("%s", tr("Wait for the catalog request to finish."));
+            return;
+        }
+        for (const auto &tab : queries_)
+            if (tab->profile_id == node.profile && tab->database == node.database &&
+                tab->session && tab->session->busy())
+            {
+                fl_alert("%s", tr("Cancel running queries for this database first."));
+                return;
+            }
+        for (auto &tab : queries_)
+            if (tab->profile_id == node.profile && tab->database == node.database)
+            {
+                tab->session.reset();
+                updateTarget(*tab);
+            }
+        catalog_.reset();
+        auto result = sessionDialog(dialogs_, *this, connection, maintenance,
+                                    secrets_[node.profile], sql, tr("Rename database"));
+        if (!result.success)
+            return;
+        databaseRenamed(node.profile, node.database, next);
+        refreshCatalog();
+        for (const auto &entry : nodes_)
+            if (entry.second.kind == 0 && entry.second.profile == node.profile)
+            {
+                tree_->select_only(entry.first, 0);
+                browse(entry.first);
+                break;
+            }
+    }
+    catch (const std::exception &ex)
+    {
+        fl_alert("%s", ex.what());
+    }
+}
+// Keep scripts, custom tab names and result data; only future connection targets change.
+void Window::databaseRenamed(const std::string &id, const std::string &from, const std::string &to)
+{
+    if (auto *p = profile(id))
+        if (p->database == from)
+            p->database = to;
+    for (auto &entry : nodes_)
+        if (entry.second.profile == id && entry.second.database == from)
+            entry.second.database = to;
+    for (auto &tab : queries_)
+        if (tab->profile_id == id && tab->database == from)
+        {
+            tab->database = to;
+            tab->rename(tab->name);
+            updateTarget(*tab);
+        }
+    save();
+}
 void Window::databaseTask(int operation)
 {
     auto it = nodes_.find(tree_->first_selected_item());

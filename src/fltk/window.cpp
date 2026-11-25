@@ -437,6 +437,8 @@ Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
         "Database/Refresh browser", 0,
         [](Fl_Widget *, void *p) { static_cast<Window *>(p)->refreshCatalog(); }, FL_MENU_DIVIDER);
     action("Database/Drop...", 0, [](Fl_Widget *, void *p) { static_cast<Window *>(p)->databaseTask(3); });
+    action("Database/Rename database...", 0,
+           [](Fl_Widget *, void *p) { static_cast<Window *>(p)->renameDatabase(); });
     action("View/Database browser", 0,
            [](Fl_Widget *, void *p)
            {
@@ -1258,14 +1260,15 @@ void Window::treeClick()
                                 "Create database...",
                                 "Backup...",
                                 "Restore...",
+                                "Rename database...",
                                 "Drop database...",
                                 "VACUUM...",
                                 "ANALYZE...",
                                 "REINDEX...",
                                 "Server roles / database privileges...",
                                 "Refresh"};
-        Fl_Menu_Item menu[15]{};
-        for (int i = 0; i < 14; ++i)
+        Fl_Menu_Item menu[16]{};
+        for (int i = 0; i < 15; ++i)
             menu[i].label(tr(labels[i]));
         const int kind = found->second.kind;
         if (kind == 0 || kind == 5)
@@ -1274,14 +1277,14 @@ void Window::treeClick()
             for (int i : {2, 3, 4})
                 menu[i].flags |= FL_MENU_INACTIVE;
         if (kind != 1)
-            for (int i : {6, 7, 8})
+            for (int i : {6, 7, 8, 9})
                 menu[i].flags |= FL_MENU_INACTIVE;
         const auto &type = found->second.object_type;
         if (kind != 0 && kind != 1 &&
             !(kind == 3 && (type == "r" || type == "p" || type == "m")))
-            for (int i : {9, 10, 11})
+            for (int i : {10, 11, 12})
                 menu[i].flags |= FL_MENU_INACTIVE;
-        for (int i : {1, 4, 8, 11, 12})
+        for (int i : {1, 4, 9, 12, 13})
             menu[i].flags |= FL_MENU_DIVIDER;
         auto *selected = menu[0].popup(Fl::event_x(), Fl::event_y());
         if (!selected)
@@ -1314,10 +1317,12 @@ void Window::treeClick()
         else if (action == 7)
             databaseTask(1);
         else if (action == 8)
+            renameDatabase();
+        else if (action == 9)
             databaseTask(3);
-        else if (action >= 9 && action <= 11)
-            databaseTask(static_cast<int>(action) - 5);
-        else if (action == 12)
+        else if (action >= 10 && action <= 12)
+            databaseTask(static_cast<int>(action) - 6);
+        else if (action == 13)
             manageRoles();
         else
             refreshCatalog();

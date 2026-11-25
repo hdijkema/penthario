@@ -124,6 +124,9 @@ foreach(theme light dark classic)
 endforeach()
 configure_file(src/fltk/themes.h.in generated/themes.h @ONLY)
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/translations/fltk-ui.json" PGADM_UI_CATALOG)
+# MSVC limits each string literal to 16 KiB. Keep the readable JSON catalog,
+# but embed its lines as adjacent literals rather than one growing raw literal.
+string(REPLACE "\n" "\n)PGJRCATALOG\"\nR\"PGJRCATALOG(" PGADM_UI_CATALOG "${PGADM_UI_CATALOG}")
 configure_file(src/fltk/ui_catalog.h.in generated/ui_catalog.h @ONLY)
 target_compile_definitions(pgadmin-jr-fltk PRIVATE PGADM_APP_VERSION="${PROJECT_VERSION}")
 target_link_libraries(pgadmin-jr-fltk PRIVATE pgadmin-fltk-core fltk-cell::fltk-cell fltk-css::fltk-css fltk-dock::fltk-dock fltk-toolbar::fltk-toolbar)

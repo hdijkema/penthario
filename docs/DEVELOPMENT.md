@@ -82,6 +82,13 @@ by OID; relation definitions continue through pg_dump. Category captions are
 localized separately from object identifiers. Browser UI tests feed isolated
 catalog fixtures through this path without opening database connections.
 
+`Window::renameDatabase` uses `renameDatabaseSql` to validate and quote identifiers,
+then runs ALTER DATABASE through `sessionDialog` on a different maintenance
+database. It refuses busy target sessions, closes idle sessions for that profile,
+and leaves foreign connections to PostgreSQL's normal checks. Only server success
+calls `databaseRenamed` to update and save the profile and query-tab targets;
+catalog refresh reloads the affected server. Failed operations retain old targets.
+
 STL models contain no widget pointers. ResultTable maps values to fltk-cell
 renderers. Editor overlays belong to fltk-cell, separately from drawing. Keep
 wrappers small; the XLSX wrapper only writes result cells and closes the workbook.

@@ -1,5 +1,6 @@
 title: pgadmin-jr
-description: A focused native desktop application for PostgreSQL. Write SQL, browse databases, export results and take care of everyday administration.
+alternate_name: pgadmin junior
+description: "pgadmin-jr (pgadmin junior) is a native alternative to pgAdmin 4 for everyday PostgreSQL work: SQL editing, database browsing, exports and maintenance."
 social_image: /assets/pgadmin-jr-workspace.png
 url: https://hdijkema.github.io
 baseurl: /pgadmin-jr

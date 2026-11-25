@@ -25,6 +25,8 @@ struct ToolRequest
     std::string schema, relation;
 };
 std::string nameError(const std::string &);
+// Validate both database names and quote them as identifiers in one ALTER DATABASE.
+std::string renameDatabaseSql(const std::string &from, const std::string &to);
 std::string maintenanceSql(Task, const std::string &database, const std::string &schema = {},
                            const std::string &relation = {}, bool analyze = true, bool concurrent = true);
 std::string roleSql(const Json &desired, const Json &original = Json::object());

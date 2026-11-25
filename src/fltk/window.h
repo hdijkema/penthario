@@ -100,6 +100,9 @@ class Window : public Fl_Css_Window
     void exportCsv();
     void exportExcel();
     void databaseTask(int);
+    // Rename a selected database through a separate maintenance session; closes idle
+    // own sessions after confirmation and updates workspace targets only on success.
+    void renameDatabase();
     void manageRoles();
     void inspectObject();
     void editSelectedProfile();
@@ -172,6 +175,8 @@ class Window : public Fl_Css_Window
     bool smoke_ = false, restore_maximized_ = false;
     Json layouts_ = Json::object(), dialogs_ = Json::object(), normal_rectangle_ = Json::object();
     void refreshCatalog();
+    // Apply a successful server rename to this profile and its tabs, then save targets.
+    void databaseRenamed(const std::string &profile, const std::string &from, const std::string &to);
     void updateTarget(QueryTab &);
 };
 } // namespace pgjr

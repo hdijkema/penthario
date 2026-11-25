@@ -1,9 +1,10 @@
-# pgadmin-jr
+# pgadmin-jr (pgadmin junior)
 
 <img src="assets/icons/pgadmin-jr.svg" width="96" alt="pgadmin-jr elephant icon">
 
-**A native desktop application for everyday PostgreSQL work.** The name means
-pgAdmin junior: a focused companion for the PostgreSQL tasks you use most often.
+**A native alternative to pgAdmin 4 for everyday PostgreSQL work.** Also known
+as pgadmin junior, pgadmin-jr is an independent open-source project focused on
+the PostgreSQL tasks you use most often.
 
 [Project homepage](https://hdijkema.github.io/pgadmin-jr/)
 

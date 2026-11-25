@@ -23,6 +23,12 @@ void valid(const std::string &name)
         throw std::runtime_error(error);
 }
 } // namespace
+std::string renameDatabaseSql(const std::string &from, const std::string &to)
+{
+    valid(from);
+    valid(to);
+    return "ALTER DATABASE " + quoteIdentifier(from) + " RENAME TO " + quoteIdentifier(to) + ";";
+}
 std::string maintenanceSql(Task task, const std::string &database, const std::string &schema,
                            const std::string &relation, bool analyze, bool concurrent)
 {

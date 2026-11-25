@@ -447,6 +447,38 @@
     "nl": "Database aanmaken...",
     "de": "Datenbank erstellen..."
   },
+  "Rename database...": {
+    "nl": "Database hernoemen...",
+    "de": "Datenbank umbenennen..."
+  },
+  "Rename database": {
+    "nl": "Database hernoemen",
+    "de": "Datenbank umbenennen"
+  },
+  "New database name": {
+    "nl": "Nieuwe databasenaam",
+    "de": "Neuer Datenbankname"
+  },
+  "Choose a different maintenance database for renaming.": {
+    "nl": "Kies een andere onderhoudsdatabase voor het hernoemen.",
+    "de": "Wählen Sie zum Umbenennen eine andere Wartungsdatenbank."
+  },
+  "Select a database first.": {
+    "nl": "Selecteer eerst een database.",
+    "de": "Wählen Sie zuerst eine Datenbank aus."
+  },
+  "Wait for the catalog request to finish.": {
+    "nl": "Wacht tot het ophalen van de databaseobjecten klaar is.",
+    "de": "Warten Sie, bis die Katalogabfrage abgeschlossen ist."
+  },
+  "Cancel running queries for this database first.": {
+    "nl": "Stop eerst de actieve queries voor deze database.",
+    "de": "Brechen Sie zuerst laufende Abfragen für diese Datenbank ab."
+  },
+  "Own connections to this database will close and open transactions will roll back. Other clients are not disconnected.": {
+    "nl": "Eigen verbindingen met deze database worden gesloten en open transacties teruggedraaid. Andere clients worden niet losgekoppeld.",
+    "de": "Eigene Verbindungen zu dieser Datenbank werden geschlossen und offene Transaktionen zurückgerollt. Andere Clients werden nicht getrennt."
+  },
   "Drop database...": {
     "nl": "Database verwijderen...",
     "de": "Datenbank löschen..."

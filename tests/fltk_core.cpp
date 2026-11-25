@@ -111,6 +111,22 @@ int main(int argc, char **argv)
             rejected = true;
         }
         require(rejected, "Query path traversal rejected");
+        require(pgjr::renameDatabaseSql("old\"db", "new;db") ==
+                    "ALTER DATABASE \"old\"\"db\" RENAME TO \"new;db\";",
+                "Database rename quotes both identifiers, including SQL punctuation");
+        for (const auto &invalid : {std::string(), std::string(64, 'x'), std::string("bad\nname")})
+        {
+            rejected = false;
+            try
+            {
+                pgjr::renameDatabaseSql("database", invalid);
+            }
+            catch (const std::exception &)
+            {
+                rejected = true;
+            }
+            require(rejected, "Invalid rename target rejected before connecting");
+        }
         require(pgjr::maintenanceSql(pgjr::Task::Vacuum, "db", "a\"b", "table") ==
                     "VACUUM (VERBOSE, ANALYZE) \"a\"\"b\".\"table\";",
                 "Maintenance identifier quoting");
@@ -343,6 +359,19 @@ int main(int argc, char **argv)
             require(wait(fixture).back().success, "Role fixture cleanup");
             fixture.execute("SELECT pg_terminate_backend(pg_backend_pid());");
             wait(fixture);
+            other.execute(pgjr::renameDatabaseSql(database, "postgres"));
+            require(!wait(other).back().success, "Rename refuses an existing database name");
+            auto renamed = database + " renamed\"";
+            other.execute(pgjr::renameDatabaseSql(database, renamed));
+            require(wait(other).back().success, "Rename disposable database from maintenance session");
+            fixture.connect(profile, renamed, "");
+            require(wait(fixture).back().kind == pgjr::Event::Connected, "Connect to renamed database");
+            fixture.execute("SELECT data FROM fixture;");
+            require(wait(fixture).back().success, "Database rename preserves restored data");
+            fixture.execute("SELECT pg_terminate_backend(pg_backend_pid());");
+            wait(fixture);
+            other.execute(pgjr::renameDatabaseSql(renamed, database));
+            require(wait(other).back().success, "Rename back for fixture cleanup");
             request.task = pgjr::Task::Drop;
             request.file.clear();
             require(runTool(request), "Drop disposable database");

@@ -6,6 +6,7 @@
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Help_View.H>
 #include <fstream>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #ifdef _WIN32
@@ -141,6 +142,27 @@ struct CatalogTest
         window.refreshCatalog();
         require(window.nodes_.size() == 1 && server->children() == 0,
                 "Catalog refresh releases all group, relation and routine metadata");
+        window.newQuery(profile.id, profile.database, "SELECT 42;", "Keep this name");
+        auto *renamed = findTab(window, "Keep this name");
+        window.newQuery(profile.id, "unrelated_database", {}, "Other database");
+        auto *unrelated = findTab(window, "Other database");
+        window.databaseRenamed(profile.id, profile.database, "renamed_database");
+        auto *script = renamed->sql.text();
+        const std::string sql = script;
+        std::free(script);
+        require(renamed->database == "renamed_database" && renamed->name == "Keep this name" &&
+                    sql == "SELECT 42;",
+                "Renaming updates connection targets while keeping custom tab names");
+        require(unrelated->database == "unrelated_database" &&
+                    window.profile(profile.id)->database == "renamed_database",
+                "Renaming updates maintenance database without changing unrelated tabs");
+        const auto saved = Json::parse(readFile(window.settings_));
+        require(saved["profiles"][0]["database"] == "renamed_database",
+                "Renamed maintenance database is persisted");
+        window.databaseRenamed(profile.id, "renamed_database", profile.database);
+        window.closeQuery();
+        renamed->dirty = false;
+        window.closeQuery();
     }
 };
 } // namespace pgjr
