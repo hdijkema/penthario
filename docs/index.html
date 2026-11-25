@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="pgadmin-jr is a focused native desktop application for PostgreSQL. Write SQL, browse databases, export results and take care of everyday administration.">
+  <meta name="theme-color" content="#102c49">
+  <title>pgadmin-jr — Everyday PostgreSQL work</title>
+  <link rel="canonical" href="https://hdijkema.github.io/pgadmin-jr/">
+  <link rel="icon" href="assets/pgadmin-jr.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/pgadmin-jr.ico" sizes="any">
+  <link rel="stylesheet" href="style.css">
+  <link id="dark-theme" rel="stylesheet" href="dark.css" media="(prefers-color-scheme: dark)">
+  <script src="theme.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="pgadmin-jr home">
+      <img src="assets/pgadmin-jr.svg" width="42" height="42" alt="">
+      <span>pgadmin<span class="brand-suffix">-jr</span></span>
+    </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Dark theme" aria-pressed="false" hidden><span aria-hidden="true">◐</span> Dark theme</button>
+    <nav aria-label="Main navigation">
+      <a href="#workflow">Features</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/hdijkema/pgadmin-jr">View it on GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> A native PostgreSQL workspace</p>
+        <h1 id="hero-title">Your database.<br><span>Straight to work.</span></h1>
+        <p class="intro">Write SQL, explore your databases and get things done. pgadmin-jr brings everyday PostgreSQL work into a focused desktop application.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/hdijkema/pgadmin-jr/releases/latest">Get the latest release <span aria-hidden="true">↓</span></a>
+          <a class="text-link" href="#workflow">Take a closer look <span aria-hidden="true">→</span></a>
+        </div>
+        <p class="platforms">Windows · Linux · macOS <span>Open source · C++ &amp; FLTK</span></p>
+      </div>
+
+      <figure class="hero-art">
+        <img src="assets/pgadmin-jr-racer.svg" width="512" height="512" alt="An elephant driving a blue racing car">
+        <figcaption>A focused companion for PostgreSQL.</figcaption>
+      </figure>
+    </section>
+
+    <section class="purpose" aria-labelledby="purpose-title">
+      <p class="eyebrow">Why junior?</p>
+      <div>
+        <h2 id="purpose-title">Built for the work you keep coming back to.</h2>
+        <p>The project started with a simple frustration: waiting minutes for pgAdmin 4 to start before running a query. pgadmin-jr means pgAdmin junior — a smaller, focused companion for SQL, database browsing and administration.</p>
+        <p>A native C++17 application built with FLTK, it keeps the interface close to your work. Startup speed and responsiveness guide its design.</p>
+      </div>
+    </section>
+
+    <section class="workflow" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-heading workflow-heading">
+        <div><p class="eyebrow">From connection to results</p><h2 id="workflow-title">An everyday workflow,<br>in one place.</h2><p>Keep your SQL and its results together. Each query tab has its own session, database target and transaction.</p></div>
+      <div class="workspace-example" aria-label="Illustrative SQL query and result">
+        <div class="example-heading">
+          <img src="assets/pgadmin-jr.svg" width="52" height="52" alt="pgadmin-jr elephant logo">
+          <div><strong>pgadmin-jr</strong><span>A little more focus.</span></div>
+          <span class="example-badge">SQL example</span>
+        </div>
+        <div class="example-toolbar"><span class="connection-dot" aria-hidden="true"></span> localhost <span class="toolbar-separator">/</span> postgres <span class="example-session">Independent session</span></div>
+        <div class="example-editor">
+          <div class="example-tab">Database sizes.sql</div>
+          <pre><code><span class="sql-comment">-- A quick look at your databases</span>
+<span class="sql-keyword">SELECT</span> datname,
+       pg_size_pretty(
+         pg_database_size(datname)
+       ) <span class="sql-keyword">AS</span> size
+<span class="sql-keyword">FROM</span> pg_database
+<span class="sql-keyword">WHERE NOT</span> datistemplate
+<span class="sql-keyword">ORDER BY</span> datname;</code></pre>
+        </div>
+        <div class="example-results">
+          <div class="result-heading">Results <span>Illustrative values</span></div>
+          <table>
+            <caption class="visually-hidden">Example database sizes, for illustration</caption>
+            <thead><tr><th scope="col">datname</th><th scope="col">size</th></tr></thead>
+            <tbody><tr><td>app_development</td><td>428 MB</td></tr><tr><td>postgres</td><td>8 MB</td></tr></tbody>
+          </table>
+          <div class="example-status">2 rows <span>Copy · CSV · XLSX</span></div>
+        </div>
+      </div>
+      </div>
+      <div class="workflow-row">
+        <span class="step" aria-hidden="true">01</span>
+        <h3>Connect &amp; explore</h3>
+        <div><p>Save server profiles and browse schemas with separate groups for tables, views, materialized views, sequences, foreign tables, functions, procedures and trigger functions. Inspect columns, object properties and definition SQL.</p><p class="detail">Optionally remember passwords in your operating system’s credential vault.</p></div>
+      </div>
+      <div class="workflow-row">
+        <span class="step" aria-hidden="true">02</span>
+        <h3>Write &amp; run SQL</h3>
+        <div><p>Work in independent query tabs, each with its own database session and transaction. Use syntax highlighting, search and replace, completion and query history.</p><p class="detail">Name your tabs, organise saved queries into categories and restore your workspace.</p></div>
+      </div>
+      <div class="workflow-row">
+        <span class="step" aria-hidden="true">03</span>
+        <h3>Work with results</h3>
+        <div><p>See multiple statement results in a continuous overview. Resize columns, inspect large text or binary cells, copy results and export CSV or XLSX.</p><p class="detail">Stream full results directly to a file when they exceed the bounded on-screen preview. Inspect PostgreSQL EXPLAIN output in its own pane.</p></div>
+      </div>
+      <div class="workflow-row">
+        <span class="step" aria-hidden="true">04</span>
+        <h3>Keep databases in shape</h3>
+        <div><p>Back up and restore databases, create or drop databases, manage roles and database privileges, and run VACUUM, ANALYZE or REINDEX.</p><p class="detail">A dockable workspace, light and dark themes, and Dutch, English and German interfaces help you make it your own.</p></div>
+      </div>
+    </section>
+
+    <section class="downloads" id="download" aria-labelledby="download-title">
+      <div class="download-heading"><p class="eyebrow">Choose your desktop</p><h2 id="download-title">Ready for your next query.</h2><p>Packages and release notes are available on GitHub Releases. Choose the asset that matches your operating system and architecture.</p></div>
+      <div class="download-options">
+        <article><span class="package-label">x64</span><h3>Windows</h3><p>Installer or portable ZIP.</p><p class="package-detail">Install with the setup wizard, or extract the portable package and run it directly.</p></article>
+        <article><span class="package-label">amd64 · ARM64 · x86_64</span><h3>Linux</h3><p>Debian packages and Flatpak.</p><p class="package-detail">Debian 12/13 for amd64 and ARM64, including compatible 64-bit Raspberry Pi systems. Flatpak for x86_64.</p></article>
+        <article><span class="package-label">Apple Silicon</span><h3>macOS</h3><p>DMG disk image.</p><p class="package-detail">See the macOS packaging notes for installation, signing and validation details.</p></article>
+      </div>
+      <a class="button primary" href="https://github.com/hdijkema/pgadmin-jr/releases/latest">Browse release downloads <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="getting-started" aria-labelledby="start-title">
+      <div><p class="eyebrow">First connection</p><h2 id="start-title">A few steps to your first result.</h2></div>
+      <ol>
+        <li><strong>Add a server profile.</strong> Enter the host, port and PostgreSQL user. Usually, use <code>postgres</code> as the maintenance database.</li>
+        <li><strong>Choose your database.</strong> Connect the profile, expand Databases and right-click a database to open a query tab.</li>
+        <li><strong>Write SQL and press <kbd>F5</kbd>.</strong> Run the selected text, or execute the whole script when nothing is selected.</li>
+      </ol>
+    </section>
+
+    <section class="project-links" aria-labelledby="project-title">
+      <div><p class="eyebrow">Explore the project</p><h2 id="project-title">Open source.<br>Built in the open.</h2><p>Read the guides, build from source or report a problem. PostgreSQL operations use the permissions of your connected database role.</p></div>
+      <ul>
+        <li><a href="https://github.com/hdijkema/pgadmin-jr/blob/main/docs/USER-GUIDE.md">User &amp; build guide <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/hdijkema/pgadmin-jr/blob/main/docs/THEMES.md">Themes &amp; appearance <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/hdijkema/pgadmin-jr/blob/main/docs/MACOS-PACKAGING.md">macOS packaging notes <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/hdijkema/pgadmin-jr/issues">Issues &amp; feedback <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/hdijkema/pgadmin-jr">Source on GitHub <span aria-hidden="true">↗</span></a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="brand" href="./"><img src="assets/pgadmin-jr.svg" width="32" height="32" alt=""><span>pgadmin-jr</span></a><p>A focused companion for PostgreSQL.</p><a href="https://github.com/hdijkema/pgadmin-jr/blob/main/LICENSE">GPL-3.0 license</a></footer>
+</body>
+</html>

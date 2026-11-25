@@ -7,8 +7,11 @@ sessions and a small libxlsxwriter wrapper for XLSX output.
 
 ## Available functionality
 
-- Lazy server/database/schema/relation/column browser; object properties and
-  definition SQL, database creation/deletion and independent query tabs.
+- Lazy server/database/schema browser with counted groups for tables (including
+  partitioned tables), views, materialized views, sequences, foreign tables,
+  functions, procedures and trigger functions. Relations expand to columns;
+  routine overloads show identity arguments and are inspected by their catalog OID.
+  Object properties and definition SQL, database creation/deletion and independent query tabs.
 - SQL coloring, line numbers, indentation, comments, search/replace, explicit
   completion, named queries/categories, history and workspace restoration.
 - Continuous result sections, column widths, wrapped/paged text and binary cell

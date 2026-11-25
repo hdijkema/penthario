@@ -4,6 +4,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Image_Surface.H>
 #include <FL/Fl_PNG_Image.H>
+#include <FL/Fl_Help_View.H>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -65,6 +66,85 @@ void snapshot(Fl_Window &window, const std::filesystem::path &file)
     Fl_Surface_Device::pop_current();
     require(image && fl_write_png(file.u8string().c_str(), image.get()) == 0, "UI render artifact");
 }
+namespace pgjr
+{
+// Feed completed catalog results through the real browser population path, without
+// a database connection. Verify overload identity, group navigation and refresh cleanup.
+struct CatalogTest
+{
+    static void run(Window &window, const Profile &profile)
+    {
+        auto *server = window.tree_->find_item(profile.name.c_str());
+        Cell database;
+        database.text = profile.database;
+        Section databases;
+        databases.rows = {{database}};
+        window.populateCatalog(server, 1, {databases});
+        auto *db = server->child(0);
+        Cell schema;
+        schema.text = "public";
+        Section schemas;
+        schemas.rows = {{schema}};
+        window.populateCatalog(db, 2, {schemas});
+        auto *root = db->child(0);
+        Section objects;
+        const auto row = [](const char *name, const char *type, const char *arguments, const char *oid)
+        {
+            std::vector<Cell> cells(4);
+            cells[0].text = name;
+            cells[1].text = type;
+            cells[2].text = arguments;
+            cells[3].text = oid;
+            return cells;
+        };
+        objects.rows = {row("same_name", "r", "", "1"), row("partitioned", "p", "", "2"),
+                        row("same_name", "v", "", "3"), row("cache", "m", "", "4"),
+                        row("counter", "S", "", "5"), row("remote", "f", "", "6"),
+                        row("calculate", "F", "value integer", "7"),
+                        row("calculate", "F", "value text", "8"),
+                        row("refresh_cache", "P", "", "9"), row("on_change", "T", "", "10")};
+        window.populateCatalog(root, 3, {objects});
+        require(root->children() == 8, "Schema has eight separate object categories");
+        require(std::string(root->child(0)->label()) == "Tables (2)" &&
+                    root->child(0)->children() == 2,
+                "Ordinary and partitioned tables share a counted category");
+        require(root->child(1)->children() == 1 && root->child(2)->children() == 1 &&
+                    root->child(3)->children() == 1 && root->child(4)->children() == 1,
+                "Views, materialized views, sequences and foreign tables stay distinct");
+        auto *functions = root->child(5);
+        require(std::string(functions->label()) == "Functions (2)" &&
+                    std::string(functions->child(0)->label()) == "calculate(value integer)" &&
+                    std::string(functions->child(1)->label()) == "calculate(value text)",
+                "Function overloads retain their signatures");
+        const auto &routine = window.nodes_.at(functions->child(1));
+        require(routine.kind == 6 && routine.oid == "8" && routine.name == "calculate" &&
+                    routine.profile == profile.id && routine.database == profile.database &&
+                    routine.schema == "public" && routine.loaded,
+                "Routine metadata targets its exact OID and database without a column request");
+        auto *procedure = root->child(6)->child(0);
+        auto *trigger = root->child(7)->child(0);
+        require(window.nodes_.at(procedure).object_type == "P" &&
+                    window.nodes_.at(trigger).object_type == "T",
+                "Procedures and trigger functions have separate identities");
+        window.tree_->select_only(functions, 0);
+        window.newQuery({}, {}, {}, "Catalog group target");
+        auto *tab = findTab(window, "Catalog group target");
+        require(tab && tab->database == profile.database && !tab->session,
+                "A group can open a query in its owning database without executing SQL");
+        window.closeQuery();
+        pgjr::language("nl");
+        window.localizeCatalog();
+        require(std::string(functions->label()) == "Functies (2)" &&
+                    std::string(functions->child(0)->label()) == "calculate(value integer)",
+                "Only group captions are translated, never object names");
+        pgjr::language("en");
+        window.refreshCatalog();
+        require(window.nodes_.size() == 1 && server->children() == 0,
+                "Catalog refresh releases all group, relation and routine metadata");
+    }
+};
+} // namespace pgjr
+
 int main(int argc, char **argv)
 {
     try
@@ -168,6 +248,32 @@ int main(int argc, char **argv)
         require(tab && tab->name == "Cell renderer check", "Restored named tab");
         auto *browser = findProfileTree(window, profile.name.c_str());
         require(browser != nullptr, "Isolated profile appears in browser");
+        pgjr::CatalogTest::run(window, profile);
+        struct AboutCheck
+        {
+            std::filesystem::path screenshot;
+            bool valid = false;
+        } about_check{directory / "fltk-about.png"};
+        Fl::add_timeout(
+            0.05,
+            [](void *data)
+            {
+                auto &check = *static_cast<AboutCheck *>(data);
+                if (auto *dialog = Fl::modal())
+                {
+                    for (int i = 0; i < dialog->children(); ++i)
+                        if (auto *link = dynamic_cast<Fl_Help_View *>(dialog->child(i)))
+                            check.valid = link->value() &&
+                                std::string(link->value()).find(
+                                    "href=\"https://hdijkema.github.io/pgadmin-jr/\"") != std::string::npos &&
+                                !link->scrollbar()->visible() && !link->hscrollbar()->visible();
+                    snapshot(*dialog, check.screenshot);
+                    dialog->hide();
+                }
+            },
+            &about_check);
+        window.about();
+        require(about_check.valid, "About contains the homepage hyperlink without scrollbars");
         browser->select_only(browser->find_item(profile.name.c_str()), 0);
         window.newQuery({}, {}, {}, "Selected database");
         auto *selected_tab = findTab(window, "Selected database");

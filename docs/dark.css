@@ -1,0 +1,18 @@
+/* Loaded for the system dark preference or an explicit visitor choice. */
+:root {
+  color-scheme: dark;
+  --text: #e2eaf1;
+  --muted: #a8baca;
+  --paper: #111a24;
+  --surface: #192635;
+  --surface-muted: #213143;
+  --line: #314559;
+  --accent: #54decc;
+  --example-line: #314559;
+  --editor-bg: #0d2236;
+  --editor-tab: #183c5b;
+  --button-bg: #32e4d4;
+  --button-text: #102c49;
+  --button-hover: #8cf3e9;
+  --kbd-border: #50667c;
+}

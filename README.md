@@ -5,6 +5,8 @@
 **A native desktop application for everyday PostgreSQL work.** The name means
 pgAdmin junior: a focused companion for the PostgreSQL tasks you use most often.
 
+[Project homepage](https://hdijkema.github.io/pgadmin-jr/)
+
 pgadmin-jr brings SQL editing, database browsing, result export and administration
 into a C++17/FLTK application. Connect to a server, choose a database and work
 in independent query tabs, each with its own session and transaction.
@@ -25,7 +27,9 @@ still depends on the machine, server and query being executed.
 
 - **Connect and browse.** Save server profiles, optionally remember passwords in
   the operating system's credential vault, and browse databases, schemas, tables,
-  views, sequences and columns. Inspect object properties and definition SQL.
+  views, materialized views, sequences, foreign tables and columns. Functions,
+  procedures and trigger functions have their own groups, with signatures for
+  overloads. Inspect object properties and definition SQL.
 - **Work in SQL.** Use syntax highlighting, search/replace, completion, query
   history and a named query library with categories. Run a selection or a whole
   script. Independent tabs keep temporary tables and transactions separate.

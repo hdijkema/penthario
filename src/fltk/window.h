@@ -116,6 +116,7 @@ class Window : public Fl_Css_Window
     FLTK_Css &css;
 
   private:
+    friend struct CatalogTest;
     Theme theme_;
     void applyTheme();
     std::array<int, 3> theme_actions_{};
@@ -129,6 +130,10 @@ class Window : public Fl_Css_Window
     void save();
     void browse(Fl_Tree_Item *);
     void catalog(std::string database, std::string sql, Fl_Tree_Item *parent, int next_kind);
+    // Populate completed catalog rows beneath an existing node; group schema objects
+    // by PostgreSQL kind while preserving database targets and routine identities.
+    void populateCatalog(Fl_Tree_Item *, int next_kind, const std::vector<Section> &);
+    void localizeCatalog();
     void treeClick();
     static void tick(void *);
     Fl_Menu_Bar *menu_;
@@ -157,6 +162,7 @@ class Window : public Fl_Css_Window
         std::string profile, database, schema, name;
         bool loaded = false;
         std::string column;
+        std::string object_type, oid, signature;
     };
     std::map<Fl_Tree_Item *, Node> nodes_;
     Fl_Tree_Item *catalog_parent_ = nullptr;

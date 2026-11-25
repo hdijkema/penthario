@@ -13,6 +13,24 @@ workspace. Removing a profile does not drop a database. A missing role during
 restore must be created with suitable privileges using Server roles and privileges
 or SQL; PostgreSQL roles belong to the server, not to one database.
 
+## Browsing schema objects
+
+Expand a schema to see counted groups for Tables, Views, Materialized views,
+Sequences, Foreign tables, Functions, Procedures and Trigger functions. Tables
+include partitioned tables. Relations expand to their columns; routines are leaves.
+Expand a group to see its objects. Category names are translated; SQL identifiers
+retain their exact spelling.
+
+Function and procedure names include their identity arguments, so overloaded
+routines remain distinct. **Inspect object** shows properties and **Definition
+SQL** shows the reconstructed CREATE OR REPLACE statement, which can be copied or
+saved. Inspection uses the routine's OID in the selected database; opening a query
+from a routine or category does not invoke a function or procedure.
+
+The browser currently covers these relation/routine groups, not every object
+category offered by pgAdmin 4. Aggregates, types/domains, operators, full-text
+search objects and system-schema navigation are not yet separate browser sections.
+
 ## Editing and saved queries
 
 F5 runs the selection, or the entire script when there is no selection. Execution

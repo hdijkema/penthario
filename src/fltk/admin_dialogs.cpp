@@ -562,6 +562,13 @@ void Window::databaseTask(int operation)
                             "VACUUM",          "ANALYZE",          "REINDEX"};
     if (operation < 0 || operation > 6)
         return;
+    if (operation >= 4 && node.kind != 0 && node.kind != 1 &&
+        !(node.kind == 3 && (node.object_type == "r" || node.object_type == "p" ||
+                            node.object_type == "m")))
+    {
+        fl_alert("Select a server, database, table or materialized view for maintenance.");
+        return;
+    }
     Form form(titles[operation], dialogs_, *this);
     form.note("Server: " + p->host + ":" + p->port + " | User: " + p->user + " | Database: " + database);
     Fl_Input *name = nullptr, *confirmation = nullptr;
@@ -867,7 +874,7 @@ void Window::manageRoles()
 void Window::inspectObject()
 {
     auto it = nodes_.find(tree_->first_selected_item());
-    if (it == nodes_.end() || it->second.kind < 1)
+    if (it == nodes_.end() || it->second.kind < 1 || it->second.kind == 5)
         return;
     auto node = it->second;
     auto *p = profile(node.profile);
@@ -883,6 +890,14 @@ void Window::inspectObject()
         sql = "SELECT nspname AS name, pg_get_userbyid(nspowner) AS owner, "
               "obj_description(oid,'pg_namespace') AS comment FROM pg_namespace WHERE nspname=" +
               quoteLiteral(node.schema) + ";";
+    else if (node.kind == 6)
+        sql = "SELECT p.proname AS name, p.oid, pg_get_userbyid(p.proowner) AS owner, "
+              "l.lanname AS language, pg_get_function_arguments(p.oid) AS arguments, "
+              "pg_get_function_result(p.oid) AS result_type, p.prokind AS kind, "
+              "p.provolatile AS volatility, p.proisstrict AS strict, p.prosecdef AS security_definer, "
+              "p.proparallel AS parallel, obj_description(p.oid,'pg_proc') AS comment, "
+              "pg_get_functiondef(p.oid) AS definition FROM pg_proc p "
+              "JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=" + quoteLiteral(node.oid) + "::oid;";
     else if (node.kind == 4)
         sql = "SELECT a.attname AS name, format_type(a.atttypid,a.atttypmod) AS type, a.attnotnull AS "
               "not_null, a.attidentity AS identity, a.attgenerated AS generated, "
@@ -903,13 +918,21 @@ void Window::inspectObject()
     if (!answer.success)
         return;
     Section properties;
-    properties.title = node.database + " / " + node.schema + " / " + node.name +
+    properties.title = node.database + " / " + node.schema + " / " +
+                       (node.kind == 6 ? node.signature : node.name) +
                        (node.column.empty() ? "" : " / " + node.column);
     properties.columns = {"Property", "Value"};
+    std::string routine_definition;
     for (const auto &section : answer.sections)
         for (const auto &row : section.rows)
             for (std::size_t col = 0; col < row.size() && col < section.columns.size(); ++col)
             {
+                if (node.kind == 6 && section.columns[col] == "definition")
+                {
+                    if (!row[col].clipped && !row[col].null)
+                        routine_definition = row[col].text;
+                    continue;
+                }
                 Cell key;
                 key.text = section.columns[col];
                 key.type = 25;
@@ -1012,6 +1035,18 @@ void Window::inspectObject()
         if (tabs.value() == &sql_panel && !requested)
         {
             requested = true;
+            if (node.kind == 6)
+            {
+                if (routine_definition.empty())
+                    definition.text("-- Definition unavailable or exceeds the preview limit.\n");
+                else
+                {
+                    definition.text(routine_definition.c_str());
+                    copy.activate();
+                    save_sql.activate();
+                }
+                continue;
+            }
             if (node.kind < 3)
             {
                 definition.text("Select a relation or column to retrieve its definition SQL.");

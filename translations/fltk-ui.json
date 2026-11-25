@@ -1,4 +1,36 @@
 {
+  "Tables": {
+    "nl": "Tabellen",
+    "de": "Tabellen"
+  },
+  "Views": {
+    "nl": "Views",
+    "de": "Views"
+  },
+  "Materialized views": {
+    "nl": "Gematerialiseerde views",
+    "de": "Materialisierte Views"
+  },
+  "Sequences": {
+    "nl": "Sequences",
+    "de": "Sequenzen"
+  },
+  "Foreign tables": {
+    "nl": "Foreign tables",
+    "de": "Fremdtabellen"
+  },
+  "Functions": {
+    "nl": "Functies",
+    "de": "Funktionen"
+  },
+  "Procedures": {
+    "nl": "Procedures",
+    "de": "Prozeduren"
+  },
+  "Trigger functions": {
+    "nl": "Triggerfuncties",
+    "de": "Triggerfunktionen"
+  },
   "Previous": {
     "nl": "Vorige",
     "de": "Zurück"

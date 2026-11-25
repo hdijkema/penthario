@@ -58,3 +58,32 @@ audit tests, actionlint and the Razer application boundary check pass. Windows
 ZIP staging and isolated Inno Setup install/reinstall/startup/uninstall pass for
 0.3.10. The staged application reports no console window. Other platforms still
 require their hosted build and runtime checks.
+
+## 25 November 2026: homepage, About link and schema browser
+
+Windows x64 Release build completed with MSVC 2022 and the existing FLTK 1.4.5
+SDK. The stale local `PGADM_RELEASE_VERSION=0.3.10` cache override was cleared;
+the application uses the source version, 0.3.18. All four CTest tests passed.
+
+The native UI checks now cover counted schema-object groups, partitioned tables,
+routine overload signatures/OIDs, category-to-database query targets, translated
+category captions and refresh cleanup without a database connection. The About
+dialog renders its fixed homepage hyperlink without scrollbars. Its browser
+launcher was not invoked automatically by the test.
+
+The exact catalog and routine-inspector SQL extracted from the application
+source was also exercised against an isolated PostgreSQL 18.6 cluster. Checks
+covered ordinary/partitioned tables, views, materialized views, sequences,
+foreign tables, overloaded functions, procedures, trigger functions, a quoted
+schema name and reconstructed routine definitions. The temporary server was
+stopped afterward; no existing database or credentials were used.
+
+The buildless homepage was rendered locally in headless Chrome. Both themes
+passed layout/asset checks at 320, 390, 768 and 1440 logical pixels, without
+horizontal page overflow. Theme toggling, persisted preference, system dark
+preference and CSS fallback with the page script blocked passed. The desktop
+dark rendering and the SVG racing-elephant illustration were visually inspected.
+Local asset references and matching application logo/favicon copies were checked.
+
+GitHub Pages settings, remote publication and native macOS/Linux execution were
+not changed or validated by these checks.

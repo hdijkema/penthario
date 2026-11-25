@@ -4,6 +4,7 @@
 #include <FL/Fl_Tooltip.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Native_File_Chooser.H>
+#include <FL/Fl_Help_View.H>
 #include <FL/Fl_SVG_Image.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
@@ -1121,10 +1122,15 @@ void Window::browse(Fl_Tree_Item *item)
                 item, 2);
     else if (node.kind == 2)
         catalog(node.database,
-                "SELECT c.relname, c.relkind::text FROM pg_class c JOIN pg_namespace n ON "
+                "SELECT c.relname AS name, c.relkind::text AS kind, '' AS arguments, c.oid::text FROM pg_class c JOIN pg_namespace n ON "
                 "n.oid=c.relnamespace WHERE n.nspname=" +
                     quoteLiteral(node.schema) +
-                    " AND c.relkind IN ('r','p','v','m','S','f') ORDER BY c.relname",
+                    " AND c.relkind IN ('r','p','v','m','S','f') UNION ALL "
+                    "SELECT p.proname, CASE WHEN p.prokind='p' THEN 'P' "
+                    "WHEN p.prorettype IN ('pg_catalog.trigger'::regtype,'pg_catalog.event_trigger'::regtype) THEN 'T' "
+                    "ELSE 'F' END, pg_get_function_identity_arguments(p.oid), p.oid::text "
+                    "FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname=" +
+                    quoteLiteral(node.schema) + " AND p.prokind IN ('f','p','w') ORDER BY 1,3",
                 item, 3);
     else if (node.kind == 3)
         catalog(node.database,
@@ -1133,6 +1139,107 @@ void Window::browse(Fl_Tree_Item *item)
                     quoteLiteral(node.schema) + " AND c.relname=" + quoteLiteral(node.name) +
                     " AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum",
                 item, 4);
+}
+// Build groups after the single schema request has completed, without additional
+// connections. Leaf nodes retain raw names/OIDs; only display labels contain counts/signatures.
+void Window::populateCatalog(Fl_Tree_Item *parent_item, int next_kind, const std::vector<Section> &sections)
+{
+    auto parent = nodes_.find(parent_item);
+    if (parent == nodes_.end())
+        return;
+    const auto base = parent->second;
+    parent->second.loaded = true;
+    struct Category
+    {
+        const char *name;
+        const char *types;
+        Fl_Tree_Item *item = nullptr;
+    };
+    Category categories[] = {{"Tables", "rp"}, {"Views", "v"}, {"Materialized views", "m"},
+                             {"Sequences", "S"}, {"Foreign tables", "f"}, {"Functions", "F"},
+                             {"Procedures", "P"}, {"Trigger functions", "T"}};
+    if (next_kind == 3)
+        for (auto &category : categories)
+        {
+            category.item = tree_->add(parent_item, tr(category.name));
+            Node group = base;
+            group.kind = 5;
+            group.name = category.name;
+            group.loaded = true;
+            nodes_[category.item] = std::move(group);
+            tree_->close(category.item, 0);
+        }
+    for (const auto &section : sections)
+        for (const auto &row : section.rows)
+        {
+            if (row.empty())
+                continue;
+            auto *destination = parent_item;
+            Node node = base;
+            node.kind = next_kind;
+            node.loaded = next_kind == 4;
+            auto label = row[0].text;
+            if (next_kind == 3)
+            {
+                if (row.size() < 2 || row[1].text.size() != 1)
+                    continue;
+                node.object_type = row[1].text;
+                destination = nullptr;
+                for (const auto &category : categories)
+                    if (std::string(category.types).find(node.object_type) != std::string::npos)
+                    {
+                        destination = category.item;
+                        break;
+                    }
+                if (!destination)
+                    continue;
+                if (row.size() > 3)
+                    node.oid = row[3].text;
+                if (node.object_type == "F" || node.object_type == "P" || node.object_type == "T")
+                {
+                    if (row.size() < 4)
+                        continue;
+                    node.kind = 6;
+                    node.loaded = true;
+                    node.signature = row[0].text + "(" + row[2].text + ")";
+                    label = node.signature;
+                }
+            }
+            if (next_kind == 1)
+                node.database = row[0].text;
+            else if (next_kind == 2)
+                node.schema = row[0].text;
+            else if (next_kind == 4)
+                node.column = row[0].text;
+            else
+                node.name = row[0].text;
+            auto *item = tree_->add(destination, label.c_str());
+            nodes_[item] = std::move(node);
+        }
+    localizeCatalog();
+    tree_->open(parent_item, 0);
+    tree_->redraw();
+    std::vector<std::string> words;
+    for (const auto &entry : nodes_)
+    {
+        const auto &node = entry.second;
+        if (node.kind == 2)
+            words.push_back(node.schema);
+        else if (node.kind == 4)
+            words.push_back(node.column);
+        else if (node.kind == 3 || node.kind == 6)
+            words.push_back(node.name);
+    }
+    for (auto &tab : queries_)
+        tab->editor->completionWords(words);
+}
+// Translate category captions only; database object identifiers are never translated.
+void Window::localizeCatalog()
+{
+    for (const auto &entry : nodes_)
+        if (entry.second.kind == 5)
+            entry.first->label((std::string(tr(entry.second.name.c_str())) + " (" +
+                                std::to_string(entry.first->children()) + ")").c_str());
 }
 void Window::treeClick()
 {
@@ -1161,7 +1268,7 @@ void Window::treeClick()
         for (int i = 0; i < 14; ++i)
             menu[i].label(tr(labels[i]));
         const int kind = found->second.kind;
-        if (kind == 0)
+        if (kind == 0 || kind == 5)
             menu[1].flags |= FL_MENU_INACTIVE;
         if (kind != 0)
             for (int i : {2, 3, 4})
@@ -1169,7 +1276,9 @@ void Window::treeClick()
         if (kind != 1)
             for (int i : {6, 7, 8})
                 menu[i].flags |= FL_MENU_INACTIVE;
-        if (kind == 4)
+        const auto &type = found->second.object_type;
+        if (kind != 0 && kind != 1 &&
+            !(kind == 3 && (type == "r" || type == "p" || type == "m")))
             for (int i : {9, 10, 11})
                 menu[i].flags |= FL_MENU_INACTIVE;
         for (int i : {1, 4, 8, 11, 12})
@@ -1547,6 +1656,7 @@ void Window::changeLanguage(const char *value)
         localize(*browser_panel_);
         localize(*library_panel_);
         localize(*history_panel_);
+        localizeCatalog();
         save();
     }
     catch (const std::exception &ex)
@@ -1566,17 +1676,27 @@ void Window::about()
     Fl_Double_Window dialog(620, 270, "About pgadmin-jr");
     Fl_Box image(24, 40, 112, 112);
     image.image(icon.get());
-    Fl_Box text(160, 24, 435, 190);
+    Fl_Box text(160, 24, 435, 135);
     text.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
     text.copy_label((std::string("pgadmin-jr ") + PGADM_APP_VERSION +
                      "\n\nNative PostgreSQL administration\nFLTK, fltk-css, fltk-cell, libpq and "
-                     "libxlsxwriter\n\nhttps://github.com/hdijkema/pgadmin-jr")
+                     "libxlsxwriter")
                         .c_str());
+    Fl_Help_View homepage(160, 166, 435, 42);
+    homepage.box(FL_FLAT_BOX);
     Fl_Button close(490, 225, 105, 30, "Close");
     close.callback([](Fl_Widget *, void *p) { static_cast<Fl_Window *>(p)->hide(); }, &dialog);
     dialog.end();
     dialog.set_modal();
     localize(dialog);
+    theme_.apply(dialog);
+    homepage.color(dialog.color());
+    homepage.textfont(text.labelfont());
+    homepage.textsize(text.labelsize());
+    homepage.textcolor(text.labelcolor());
+    // FLTK handles link hit-testing, the hand cursor and opening HTTPS in the browser.
+    homepage.value("<a href=\"https://hdijkema.github.io/pgadmin-jr/\">"
+                   "https://hdijkema.github.io/pgadmin-jr/</a>");
     DialogPlacement placement(dialog, dialogs_, "about", *this);
     dialog.show();
     while (dialog.shown())
@@ -1837,39 +1957,7 @@ void Window::pump()
                         }
                     continue;
                 }
-                auto parent = nodes_.find(catalog_parent_);
-                if (parent != nodes_.end())
-                {
-                    auto base = parent->second;
-                    parent->second.loaded = true;
-                    for (const auto &section : catalog_results_)
-                        for (const auto &row : section.rows)
-                            if (!row.empty())
-                            {
-                                auto value = row[0].text;
-                                auto *item = tree_->add(catalog_parent_, value.c_str());
-                                Node node = base;
-                                node.kind = catalog_kind_;
-                                node.loaded = false;
-                                if (node.kind == 1)
-                                    node.database = value;
-                                else if (node.kind == 2)
-                                    node.schema = value;
-                                else if (node.kind == 4)
-                                    node.column = value;
-                                else
-                                    node.name = value;
-                                nodes_[item] = std::move(node);
-                            }
-                    tree_->open(catalog_parent_, 0);
-                    tree_->redraw();
-                    std::vector<std::string> words;
-                    for (const auto &node : nodes_)
-                        if (node.second.kind >= 2)
-                            words.push_back(node.first->label());
-                    for (auto &tab : queries_)
-                        tab->editor->completionWords(words);
-                }
+                populateCatalog(catalog_parent_, catalog_kind_, catalog_results_);
                 catalog_wait_ = false;
                 catalog_results_.clear();
                 status_->copy_label("Catalog loaded");

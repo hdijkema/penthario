@@ -68,6 +68,15 @@ handshakes. Preview memory is bounded; full export streams on the session worker
 ToolJob runs PostgreSQL tools with private child environment credentials and
 merged progress output. Passwords are never command-line arguments.
 
+`Window::populateCatalog` consumes completed catalog rows on the GUI thread.
+Schema requests combine `pg_class` relations and `pg_proc` routines into one
+result; counted category nodes retain the database/schema target but are not SQL
+objects. Routine leaves keep their OID and identity arguments, separating
+overloads. `inspectObject` retrieves routine properties and `pg_get_functiondef`
+by OID; relation definitions continue through pg_dump. Category captions are
+localized separately from object identifiers. Browser UI tests feed isolated
+catalog fixtures through this path without opening database connections.
+
 STL models contain no widget pointers. ResultTable maps values to fltk-cell
 renderers. Editor overlays belong to fltk-cell, separately from drawing. Keep
 wrappers small; the XLSX wrapper only writes result cells and closes the workbook.
@@ -90,6 +99,28 @@ selection behavior. Query close requests pass through the existing busy,
 transaction and unsaved-work checks. `View` reopens hidden panels or resets their
 placement. Until the first fltk-dock source tag is published, configure with
 `-DPGADM_FLTK_DOCK_SOURCE_DIR=C:/devel/FLTK/fltk-dock` (or your checkout path).
+
+## Project homepage and About dialog
+
+`docs/index.html` and its local stylesheets form a buildless, self-contained GitHub
+Pages homepage. Its logo and favicon are copies of `assets/icons/pgadmin-jr.svg`
+and `assets/icons/pgadmin-jr.ico` under `docs/assets/`; refresh those copies when
+the application branding changes. The site uses system fonts and no third-party
+services. `dark.css` follows the system preference without JavaScript; the small
+`theme.js` control allows a manual override and remembers it in local browser
+storage when available. The racing elephant illustration is recovered from the
+original artwork; provenance is recorded in `docs/assets/README.md`. Preview by
+opening `docs/index.html` in a browser.
+
+To publish at <https://hdijkema.github.io/pgadmin-jr/>, select **Deploy from a
+branch** in the repository's **Settings > Pages**, then choose the default
+branch and `/docs`. `docs/.nojekyll` keeps the files as plain static content.
+Application release workflows do not need to build or deploy the homepage.
+
+`Window::about` keeps the application logo and uses FLTK's `Fl_Help_View` for
+the fixed HTTPS homepage link. FLTK supplies link hit-testing, the hand cursor
+and the platform browser launcher. Only application-owned markup is supplied;
+no general HTML renderer or CSS-library changes are required.
 
 ## Verification
 
