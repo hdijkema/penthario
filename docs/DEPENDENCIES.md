@@ -6,20 +6,21 @@ title: Dependencies and releases
 
 | Component | Selected release | Purpose |
 | --- | --- | --- |
-| FLTK | 1.4.5 (`release-1.4.5`) | Native widgets, drawing, SVG |
-| fltk-css | 0.1.1 (`v0.1.1`) | Styles and native widget property mapping |
-| fltk-cell | 0.1.0 (`v0.1.0`) | Typed cell drawers/editors |
-| fltk-dock | 0.1.0 (`v0.1.0`) | Dockable tool windows and rectangular tabs |
-| fltk-toolbar | 0.1.1 (`v0.1.1`) | Toolbar layout and SVG buttons |
-| nlohmann/json | 3.12.0 | Workspace and metadata |
-| hrantzsch/keychain | 1.3.1 | Windows Credential Manager, macOS Keychain, Linux Secret Service |
-| libxlsxwriter | 1.2.4 | XLSX output |
-| zlib | 1.3.2 | XLSX compression |
-| PostgreSQL | libpq >=15; packaged tools 18.6 | Protocol and administration tools |
-| libsecret | 0.21.7 (Flatpak) | Linux Secret Service integration |
-| Inno Setup | 7.1.1 | Windows installer compiler |
+| [FLTK](https://www.fltk.org/) | 1.4.5 (`release-1.4.5`) | Native widgets, drawing, SVG |
+| [fltk-css](https://github.com/hdijkema/fltk-css) | 0.1.1 (`v0.1.1`) | Styles and native widget property mapping |
+| [fltk-cell](https://github.com/hdijkema/fltk-cell) | 0.1.0 (`v0.1.0`) | Typed cell drawers/editors |
+| [fltk-dock](https://github.com/hdijkema/fltk-dock) | 0.1.0 (`v0.1.0`) | Dockable tool windows and rectangular tabs |
+| [fltk-toolbar](https://github.com/hdijkema/fltk-toolbar) | 0.1.1 (`v0.1.1`) | Toolbar layout and SVG buttons |
+| [nlohmann/json](https://github.com/nlohmann/json) | 3.12.0 | Workspace and metadata |
+| [hrantzsch/keychain](https://github.com/hrantzsch/keychain) | 1.3.1 | Windows Credential Manager, macOS Keychain, Linux Secret Service |
+| [libxlsxwriter](https://github.com/jmcnamara/libxlsxwriter) | 1.2.4 | XLSX output |
+| [zlib](https://github.com/madler/zlib) | 1.3.2 | XLSX compression |
+| [PostgreSQL](https://www.postgresql.org/) | libpq >=15; packaged tools 18.6 | Protocol and administration tools |
+| [libsecret](https://gitlab.gnome.org/GNOME/libsecret) | 0.21.7 (Flatpak) | Linux Secret Service integration |
+| [Inno Setup](https://github.com/jrsoftware/issrc) | 7.1.1 | Windows installer compiler |
 
-fltk-trayicon is a separate library at version 0.1.0, also targeting FLTK 1.4.5.
+[fltk-trayicon](https://github.com/hdijkema/fltk-trayicon) is a separate library
+at version 0.1.0, also targeting FLTK 1.4.5.
 It is not a dependency of pgadmin-jr, which has no tray workflow.
 
 Dependencies use explicit release tags or checksummed release archives rather

@@ -10,7 +10,12 @@ plugins:
   - jekyll-relative-links
 defaults:
   - scope:
-      path: ""
+      path: "**/*.md"
+      type: pages
+    values:
+      layout: documentation
+  - scope:
+      path: "**/*.markdown"
       type: pages
     values:
       layout: documentation

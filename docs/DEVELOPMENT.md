@@ -135,6 +135,9 @@ links to every guide. Jekyll generates this list from the documentation pages,
 so adding a Markdown guide also adds it to the homepage and sidebar. The
 homepage's `layout: null` header enables this Liquid rendering without wrapping
 the complete HTML document in another layout.
+Both navigation lists explicitly accept only `.md` and `.markdown` source files,
+and the default documentation layout is scoped to those extensions. Theme
+stylesheets, scripts and other generated assets are never documentation entries.
 
 For local website builds, use Jekyll 3.10 and its `jekyll-relative-links`,
 `jekyll-optional-front-matter` and `kramdown-parser-gfm` gems. These are website
@@ -142,6 +145,7 @@ tools, not application dependencies. From the repository root:
 
 ```sh
 jekyll build --source docs --destination build/pages/pgadmin-jr
+python tests/check-site.py build/pages/pgadmin-jr
 python -m http.server 8000 --directory build/pages
 ```
 
