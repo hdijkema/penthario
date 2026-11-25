@@ -130,6 +130,11 @@ links, including anchors. The default layout and `jekyll-optional-front-matter`
 also cover new Markdown pages without a header; the sidebar lists those pages
 automatically. `assets/README.md` is source-only artwork information and is
 excluded. The hand-written homepage has no documentation wrapper.
+Its **Docs** navigation link jumps to a documentation overview containing direct
+links to every guide. Jekyll generates this list from the documentation pages,
+so adding a Markdown guide also adds it to the homepage and sidebar. The
+homepage's `layout: null` header enables this Liquid rendering without wrapping
+the complete HTML document in another layout.
 
 For local website builds, use Jekyll 3.10 and its `jekyll-relative-links`,
 `jekyll-optional-front-matter` and `kramdown-parser-gfm` gems. These are website
@@ -142,8 +147,9 @@ python -m http.server 8000 --directory build/pages
 
 Open `http://localhost:8000/pgadmin-jr/`. The destination deliberately includes
 the configured `/pgadmin-jr` base path so local asset and documentation URLs
-match GitHub Pages. Opening `docs/index.html` directly still previews the home
-page, but its generated guide links require the Jekyll build.
+match GitHub Pages. Preview the generated site: the source `docs/index.html`
+contains Liquid markup for the documentation list and is not a standalone HTML
+preview.
 
 `Window::about` keeps the application logo and uses FLTK's `Fl_Help_View` for
 the fixed HTTPS homepage link. FLTK supplies link hit-testing, the hand cursor

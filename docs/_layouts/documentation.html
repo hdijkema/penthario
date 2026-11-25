@@ -44,7 +44,8 @@
       <h2>Documentation</h2>
       <ul>
         <li><a href="{{ '/USER-GUIDE.html' | relative_url }}"{% if page.url == '/USER-GUIDE.html' %} aria-current="page"{% endif %}>User guide</a></li>
-        {% assign documents = site.pages | where: 'layout', 'documentation' | sort: 'name' %}
+        {% assign documents = site.pages | where: 'layout', 'documentation' %}
+        {% assign documents = documents | where_exp: 'document', "document.name != 'index.html'" | sort: 'name' %}
         {% for document in documents %}
         {% unless document.url == '/USER-GUIDE.html' %}
         <li><a href="{{ document.url | relative_url }}"{% if page.url == document.url %} aria-current="page"{% endif %}>{{ document.title | default: document.name | remove: '.md' | escape }}</a></li>
