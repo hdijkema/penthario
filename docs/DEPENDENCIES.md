@@ -6,7 +6,7 @@
 | fltk-css | 0.1.1 (`v0.1.1`) | Styles and native widget property mapping |
 | fltk-cell | 0.1.0 (`v0.1.0`) | Typed cell drawers/editors |
 | fltk-dock | 0.1.0 (`v0.1.0`) | Dockable tool windows and rectangular tabs |
-| fltk-toolbar | 0.1.0 (`v0.1.0`) | Toolbar layout and SVG buttons |
+| fltk-toolbar | 0.1.1 (`v0.1.1`) | Toolbar layout and SVG buttons |
 | nlohmann/json | 3.12.0 | Workspace and metadata |
 | hrantzsch/keychain | 1.3.1 | Windows Credential Manager, macOS Keychain, Linux Secret Service |
 | libxlsxwriter | 1.2.4 | XLSX output |
@@ -25,8 +25,8 @@ changes; builds do not silently choose whatever happens to be newest that day.
 
 ## Published library tags
 
-The selected releases are fltk-css `v0.1.1` and fltk-cell, fltk-dock and
-fltk-toolbar `v0.1.0`. The fltk-dock tag identifies commit
+The selected releases are fltk-css and fltk-toolbar `v0.1.1`, with fltk-cell
+and fltk-dock at `v0.1.0`. The fltk-dock tag identifies commit
 `8ca3e3456ebb7821e7cdb77b0e1599d6566eec61`. Application builds can fetch all
 widget dependencies by release tag; fltk-trayicon remains independent.
 Publish and validate library tags before selecting them in application builds.

@@ -155,7 +155,7 @@ class ReleaseAssetsTest(unittest.TestCase):
             with self.subTest(library=library):
                 source = next(item for item in application["sources"]
                               if item.get("dest") == f"vendor/{library}")
-                self.assertEqual(source["tag"], "v0.1.1" if library == "fltk-css" else "v0.1.0")
+                self.assertEqual(source["tag"], "v0.1.1" if library in ("fltk-css", "fltk-toolbar") else "v0.1.0")
                 self.assertIn(f"-D{option}=/run/build/pgadmin-jr/vendor/{library}",
                               application["config-opts"])
         prepare("", output)
