@@ -6,7 +6,7 @@
 
 A lightweight PostgreSQL administration tool.
 
-*Less machinery. More magic.*
+*Less machinery. Magical in name only.*
 
 Penthario is an independent open-source project focused on the PostgreSQL
 tasks you use most often.

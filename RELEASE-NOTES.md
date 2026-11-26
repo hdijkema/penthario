@@ -1,6 +1,6 @@
 ## A lightweight PostgreSQL administration tool.
 
-## *Less machinery. More magic.*
+## *Less machinery. Magical in name only.*
 
 Penthario brings SQL editing, database browsing and everyday administration 
 into a focused desktop application. Its C++/FLTK interface is designed for 
