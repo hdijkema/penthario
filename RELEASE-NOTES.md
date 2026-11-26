@@ -1,12 +1,14 @@
 # Penthario 0.4.4
 
-**The Master of Transactions**
+**The Master of Relations**
 
-Previously known as pgadmin-jr (pgadmin junior).
+A lightweight PostgreSQL administration tool.
 
-Penthario is a focused, native PostgreSQL desktop application
-for writing SQL, exploring databases and getting everyday administration done.
-Its C++/FLTK interface is designed for quick startup and responsive interaction.
+*Less machinery. More magic.*
+
+Penthario brings SQL editing, database browsing and everyday administration 
+into a focused desktop application. Its C++/FLTK interface is designed for 
+quick startup and responsive interaction.
 
 ## Highlights
 

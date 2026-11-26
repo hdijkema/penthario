@@ -2,11 +2,14 @@
 
 <img src="assets/icons/penthario.svg" width="96" alt="penthario elephant icon">
 
-**The Master of Transactions**
+**The Master of Relations**
 
-A native alternative to pgAdmin 4 for everyday PostgreSQL work. Formerly known
-as pgadmin-jr (pgadmin junior), Penthario is an independent open-source project
-focused on the PostgreSQL tasks you use most often.
+A lightweight PostgreSQL administration tool.
+
+*Less machinery. More magic.*
+
+Formerly known as pgadmin-jr (pgadmin junior), Penthario is an independent
+open-source project focused on the PostgreSQL tasks you use most often.
 
 [Project homepage](https://hdijkema.github.io/penthario/)
 

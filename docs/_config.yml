@@ -1,6 +1,6 @@
 title: Penthario
 alternate_name: [pgadmin-jr, pgadmin junior]
-description: "Penthario, formerly pgadmin-jr (pgadmin junior), is a native alternative to pgAdmin 4 for everyday PostgreSQL work: SQL editing, database browsing, exports and maintenance."
+description: "Penthario — The Master of Relations. A lightweight PostgreSQL administration tool. Less machinery. More magic. SQL editing, database browsing, exports and maintenance."
 social_image: /assets/penthario-workspace.png
 url: https://hdijkema.github.io
 baseurl: /penthario
