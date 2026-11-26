@@ -14,34 +14,34 @@ move_license_notices = packaging['move_license_notices']
 class MacPackagingTest(unittest.TestCase):
     def test_license_notices_are_moved_out_of_macos_directory(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
-            app = Path(temporary_directory) / 'pgadmin-jr.app'
+            app = Path(temporary_directory) / 'penthario.app'
             binaries = app / 'Contents/MacOS'
             resources = app / 'Contents/Resources'
             binaries.mkdir(parents=True)
             (binaries / 'Lucide-LICENSE.txt').write_text('license')
             (binaries / 'keychain-LICENSE.txt').write_text('copying')
-            (binaries / 'pgadmin-jr').write_text('executable')
+            (binaries / 'penthario').write_text('executable')
             (binaries / 'readme.txt').write_text('other text')
 
             move_license_notices(app)
 
             self.assertEqual((resources / 'Lucide-LICENSE.txt').read_text(), 'license')
             self.assertEqual((resources / 'keychain-LICENSE.txt').read_text(), 'copying')
-            self.assertTrue((binaries / 'pgadmin-jr').is_file())
+            self.assertTrue((binaries / 'penthario').is_file())
             self.assertTrue((binaries / 'readme.txt').is_file())
             self.assertFalse((binaries / 'Lucide-LICENSE.txt').exists())
             self.assertFalse((binaries / 'keychain-LICENSE.txt').exists())
 
     def test_bundled_import_is_accepted(self):
         commands = 'cmd LC_LOAD_DYLIB\n cmdsize 88\n name @rpath/libpq.5.dylib (offset 24)\n'
-        check_dependencies(Path('pgadmin-jr'), commands)
+        check_dependencies(Path('penthario'), commands)
 
     def test_plugin_install_name_is_not_an_import(self):
         # A library ID describes itself, not an imported dependency.
         check_dependencies(Path('libpgclient.dylib'), '''Load command 0
           cmd LC_ID_DYLIB
       cmdsize 184
-         name /Users/runner/build/image/pgadmin-jr.app/Contents/Frameworks/libpgclient.dylib (offset 24)
+         name /Users/runner/build/image/penthario.app/Contents/Frameworks/libpgclient.dylib (offset 24)
    time stamp 1 Thu Jan  1 00:00:01 1970
 Load command 1
           cmd LC_LOAD_DYLIB
@@ -67,7 +67,7 @@ Load command 3
                     # No ID: an executable's first library entry must still be checked.
                     commands = f'Load command 0\n cmd {command}\n cmdsize 128\n name {dependency} (offset 24)\n'
                     with self.assertRaisesRegex(ValueError, 'External dependency'):
-                        check_dependencies(Path('pgadmin-jr'), commands)
+                        check_dependencies(Path('penthario'), commands)
 
     def test_import_matching_the_install_name_is_still_checked(self):
         commands = '''Load command 0

@@ -1,4 +1,4 @@
-/* pgadmin-jr homepage. Self-contained: system fonts and local assets. */
+/* penthario homepage. Self-contained: system fonts and local assets. */
 :root {
   color-scheme: light;
   --ink: #102c49;
@@ -41,7 +41,6 @@ section { scroll-margin-top: 2rem; }
 .site-header, main, .site-footer { width: min(1180px, calc(100% - 4rem)); margin-inline: auto; }
 .site-header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding-block: 1.5rem; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: .7rem; text-decoration: none; font-size: 1.4rem; font-weight: 750; letter-spacing: -.04em; }
-.brand-suffix { color: var(--accent); }
 nav { display: flex; gap: 1.8rem; align-items: center; margin-left: auto; }
 nav a { text-decoration: none; font-size: .9rem; font-weight: 600; }
 .theme-toggle { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .65rem; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: transparent; font: inherit; font-size: .75rem; cursor: pointer; white-space: nowrap; }

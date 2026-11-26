@@ -335,7 +335,7 @@ void QueryTab::highlight()
 }
 
 Window::Window(FLTK_Css &stylesheet, std::filesystem::path settings, bool smoke)
-    : Fl_Css_Window(stylesheet, 100, 100, 1440, 820, "pgadmin-jr"), css(stylesheet), theme_(stylesheet),
+    : Fl_Css_Window(stylesheet, 100, 100, 1440, 820, "Penthario"), css(stylesheet), theme_(stylesheet),
       settings_(std::move(settings)), smoke_(smoke)
 {
     menu_ = new Fl_Menu_Bar(0, 0, w(), 28);
@@ -811,11 +811,11 @@ void Window::load()
         }
         try
         {
-            theme_.load(state.value("theme", "light"), std::filesystem::u8path(state.value("theme_css", "")));
+            theme_.load(state.value("theme", "dark"), std::filesystem::u8path(state.value("theme_css", "")));
         }
         catch (const std::exception &ex)
         {
-            theme_.load("light");
+            theme_.load("dark");
             status_->copy_label((std::string("Theme could not be loaded: ") + ex.what()).c_str());
         }
         profiles_ = state.value("profiles", std::vector<Profile>{});
@@ -1678,13 +1678,13 @@ void Window::about()
 {
     Fl_SVG_Image svg(nullptr, appSvg);
     std::unique_ptr<Fl_Image> icon(svg.copy(112, 112));
-    Fl_Double_Window dialog(620, 270, "About pgadmin-jr");
+    Fl_Double_Window dialog(620, 270, "About Penthario");
     Fl_Box image(24, 40, 112, 112);
     image.image(icon.get());
     Fl_Box text(160, 24, 435, 135);
     text.align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
-    text.copy_label((std::string("pgadmin-jr ") + PGADM_APP_VERSION +
-                     "\n\nNative PostgreSQL administration\nFLTK, fltk-css, fltk-cell, libpq and "
+    text.copy_label((std::string("Penthario ") + PGADM_APP_VERSION +
+                     "\nThe Master of Transactions\n\nNative PostgreSQL administration\nFLTK, fltk-css, fltk-cell, libpq and "
                      "libxlsxwriter")
                         .c_str());
     Fl_Help_View homepage(160, 166, 435, 42);
@@ -1700,8 +1700,8 @@ void Window::about()
     homepage.textsize(text.labelsize());
     homepage.textcolor(text.labelcolor());
     // FLTK handles link hit-testing, the hand cursor and opening HTTPS in the browser.
-    homepage.value("<a href=\"https://hdijkema.github.io/pgadmin-jr/\">"
-                   "https://hdijkema.github.io/pgadmin-jr/</a>");
+    homepage.value("<a href=\"https://hdijkema.github.io/penthario/\">"
+                   "https://hdijkema.github.io/penthario/</a>");
     DialogPlacement placement(dialog, dialogs_, "about", *this);
     dialog.show();
     while (dialog.shown())

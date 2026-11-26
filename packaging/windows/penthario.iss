@@ -14,16 +14,16 @@
   #define InstallerAppId "io.github.hdijkema.AltPgAdmin"
 #endif
 #ifndef InstallerName
-  #define InstallerName "pgadmin-jr"
+  #define InstallerName "Penthario"
 #endif
 
 [Setup]
 AppId={#InstallerAppId}
 AppName={#InstallerName}
 AppVersion={#AppVersion}
-AppPublisher=pgadmin-jr contributors
-AppPublisherURL=https://hdijkema.github.io/pgadmin-jr/
-DefaultDirName={autopf}\pgadmin-jr
+AppPublisher=Penthario contributors
+AppPublisherURL=https://hdijkema.github.io/penthario/
+DefaultDirName={autopf}\penthario
 DefaultGroupName={#InstallerName}
 DisableProgramGroupPage=yes
 AllowNoIcons=yes
@@ -32,9 +32,9 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#OutputDirectory}
-OutputBaseFilename=pgadmin-jr-{#AppVersion}-windows-x64-setup
-SetupIconFile=..\..\assets\icons\pgadmin-jr.ico
-UninstallDisplayIcon={app}\pgadmin-jr.exe
+OutputBaseFilename=penthario-{#AppVersion}-windows-x64-setup
+SetupIconFile=..\..\assets\icons\penthario.ico
+UninstallDisplayIcon={app}\penthario.exe
 LicenseFile=..\..\LICENSE
 Compression=lzma2
 SolidCompression=yes
@@ -55,15 +55,18 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#SourceDirectory}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#InstallerName}"; Filename: "{app}\pgadmin-jr.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\{#InstallerName}"; Filename: "{app}\pgadmin-jr.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\{#InstallerName}"; Filename: "{app}\penthario.exe"; WorkingDir: "{app}"
+Name: "{autodesktop}\{#InstallerName}"; Filename: "{app}\penthario.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
-#ifdef UpgradeLegacyProduct
 [InstallDelete]
 ; Remove superseded program files/shortcuts only; user SQL and settings are retained.
+Type: files; Name: "{app}\pgadmin-jr.exe"
+#ifdef UpgradeLegacyProduct
 Type: files; Name: "{autoprograms}\alt-pg-admin.lnk"
 Type: files; Name: "{autodesktop}\alt-pg-admin.lnk"
+Type: files; Name: "{autoprograms}\pgadmin-jr.lnk"
+Type: files; Name: "{autodesktop}\pgadmin-jr.lnk"
 #endif
 
 [Run]
-Filename: "{app}\pgadmin-jr.exe"; Description: "{cm:LaunchProgram,{#InstallerName}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\penthario.exe"; Description: "{cm:LaunchProgram,{#InstallerName}}"; Flags: nowait postinstall skipifsilent

@@ -1,6 +1,6 @@
 ---
 title: Linux packaging
-description: "Install and package pgadmin-jr for Debian and compatible Linux desktops, including ARM64 and Flatpak."
+description: "Install and package penthario for Debian and compatible Linux desktops, including ARM64 and Flatpak."
 ---
 
 # Linux packaging
@@ -8,7 +8,7 @@ description: "Install and package pgadmin-jr for Debian and compatible Linux des
 The native Linux build uses FLTK/X11, libpq and libsecret.
 A running Secret Service is needed only for remembering
 passwords. The existing application ID `io.github.hdijkema.AltPgAdmin` is retained
-for desktop/Flatpak continuity despite the display name pgadmin-jr.
+for desktop/Flatpak continuity despite the display name penthario.
 
 ## Debian
 
@@ -19,10 +19,10 @@ uses C.UTF-8 throughout, runs GUI tests/startup checks under Xvfb, and invokes
 CPack for the Runtime component. Packages install the executable, desktop file,
 icons and license notices under standard system locations.
 
-Install with `sudo apt install ./pgadmin-jr_*.deb`. PostgreSQL client programs
+Install with `sudo apt install ./penthario_*.deb`. PostgreSQL client programs
 are distro dependencies; for a PostgreSQL 18 server, install matching-major
 (or newer) pg_dump and companion tools on PATH. An older pg_dump refuses to
-back up a newer server. No database service is installed or started by pgadmin-jr.
+back up a newer server. No database service is installed or started by penthario.
 
 ## Flatpak
 
@@ -33,7 +33,7 @@ Flathub, installs the SDK/runtime, runs flatpak-builder directly and creates a
 single-file bundle with flatpak build-bundle.
 
 ```sh
-flatpak install --user ./pgadmin-jr-*-linux-x86_64.flatpak
+flatpak install --user ./penthario-*-linux-x86_64.flatpak
 flatpak run io.github.hdijkema.AltPgAdmin
 ```
 

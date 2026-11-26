@@ -287,7 +287,7 @@ int main(int argc, char **argv)
                         if (auto *link = dynamic_cast<Fl_Help_View *>(dialog->child(i)))
                             check.valid = link->value() &&
                                 std::string(link->value()).find(
-                                    "href=\"https://hdijkema.github.io/pgadmin-jr/\"") != std::string::npos &&
+                                    "href=\"https://hdijkema.github.io/penthario/\"") != std::string::npos &&
                                 !link->scrollbar()->visible() && !link->hscrollbar()->visible();
                     snapshot(*dialog, check.screenshot);
                     dialog->hide();

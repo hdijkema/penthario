@@ -9,14 +9,14 @@ if [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ || ( $re
     exit 1
 fi
 assets=(
-    "$package_dir/pgadmin-jr-$version-windows-x64.zip"
-    "$package_dir/pgadmin-jr-$version-windows-x64-setup.exe"
-    "$package_dir/pgadmin-jr_$version-debian12_amd64.deb"
-    "$package_dir/pgadmin-jr_$version-debian13_amd64.deb"
-    "$package_dir/pgadmin-jr_$version-debian12_arm64.deb"
-    "$package_dir/pgadmin-jr_$version-debian13_arm64.deb"
-    "$package_dir/pgadmin-jr-$version-linux-x86_64.flatpak"
-    "$package_dir/pgadmin-jr-$version-macos-arm64.dmg"
+    "$package_dir/penthario-$version-windows-x64.zip"
+    "$package_dir/penthario-$version-windows-x64-setup.exe"
+    "$package_dir/penthario_$version-debian12_amd64.deb"
+    "$package_dir/penthario_$version-debian13_amd64.deb"
+    "$package_dir/penthario_$version-debian12_arm64.deb"
+    "$package_dir/penthario_$version-debian13_arm64.deb"
+    "$package_dir/penthario-$version-linux-x86_64.flatpak"
+    "$package_dir/penthario-$version-macos-arm64.dmg"
 )
 for asset in "${assets[@]}"; do
     if [[ ! -s $asset ]]; then
@@ -48,5 +48,5 @@ if existing_assets=$(gh release view "$release_tag" --json assets --jq '.assets[
     fi
 else
     gh release create "$release_tag" "${assets[@]}" \
-        --target "$(git rev-parse HEAD)" --title "pgadmin-jr $release_tag" --generate-notes
+        --target "$(git rev-parse HEAD)" --title "Penthario $release_tag" --generate-notes
 fi

@@ -1,6 +1,6 @@
 ---
 title: User guide
-description: "Connect to PostgreSQL, browse objects, write SQL and export query results with pgadmin-jr."
+description: "Connect to PostgreSQL, browse objects, write SQL and export query results with penthario."
 ---
 
 # User guide
@@ -9,8 +9,8 @@ description: "Connect to PostgreSQL, browse objects, write SQL and export query 
 
 The installer offers installation for the current user or for all users.
 The current-user mode is the default and uses
-`%LOCALAPPDATA%\Programs\pgadmin-jr`; all-users mode requests administrator
-rights and defaults to `C:\Program Files\pgadmin-jr`. Start-menu and optional
+`%LOCALAPPDATA%\Programs\penthario`; all-users mode requests administrator
+rights and defaults to `C:\Program Files\penthario`. Start-menu and optional
 desktop shortcuts follow the selected scope. Workspace files and credentials
 remain private to each user in either mode.
 

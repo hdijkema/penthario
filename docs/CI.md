@@ -1,6 +1,6 @@
 ---
 title: GitHub Actions and releases
-description: "How pgadmin-jr builds Windows, Linux and macOS packages with GitHub Actions and publishes versioned releases."
+description: "How penthario builds Windows, Linux and macOS packages with GitHub Actions and publishes versioned releases."
 ---
 
 # GitHub Actions and releases
@@ -64,14 +64,14 @@ existing release. Existing notes and assets are preserved.
 
 Expected files for version 0.3.5:
 
-- `pgadmin-jr-0.3.5-windows-x64.zip`
-- `pgadmin-jr-0.3.5-windows-x64-setup.exe`
-- `pgadmin-jr_0.3.5-debian12_amd64.deb`
-- `pgadmin-jr_0.3.5-debian13_amd64.deb`
-- `pgadmin-jr_0.3.5-debian12_arm64.deb`
-- `pgadmin-jr_0.3.5-debian13_arm64.deb`
-- `pgadmin-jr-0.3.5-linux-x86_64.flatpak`
-- `pgadmin-jr-0.3.5-macos-arm64.dmg`
+- `penthario-0.3.5-windows-x64.zip`
+- `penthario-0.3.5-windows-x64-setup.exe`
+- `penthario_0.3.5-debian12_amd64.deb`
+- `penthario_0.3.5-debian13_amd64.deb`
+- `penthario_0.3.5-debian12_arm64.deb`
+- `penthario_0.3.5-debian13_arm64.deb`
+- `penthario-0.3.5-linux-x86_64.flatpak`
+- `penthario-0.3.5-macos-arm64.dmg`
 
 Local helpers test version resolution, asset completeness and packaging audits.
 They do not publish releases. Application release versions are changed separately

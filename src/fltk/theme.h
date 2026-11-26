@@ -9,7 +9,7 @@ namespace pgjr
 class Theme
 {
   public:
-    // Attach a stylesheet owned by the Window; initialize its Light base and palette.
+    // Attach a stylesheet owned by the Window; initialize its Dark base and palette.
     explicit Theme(FLTK_Css &sheet);
     // Load a known base and optional UTF-8 file (at most 256 KiB). Throws on failure;
     // parsing succeeds before the active stylesheet, palette and preferences change.

@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=pgadmin-jr
+Name=Penthario
 Comment=PostgreSQL database administration
 Comment[nl]=PostgreSQL-databasebeheer
 Comment[de]=PostgreSQL-Datenbankverwaltung
-Exec=pgadmin-jr
+Exec=penthario
 Icon=io.github.hdijkema.AltPgAdmin
 Terminal=false
 Categories=Development;Database;

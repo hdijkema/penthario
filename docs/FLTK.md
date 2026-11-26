@@ -1,6 +1,6 @@
 ---
 title: FLTK implementation
-description: "Features, limits and workspace migration for the native C++ and FLTK implementation of pgadmin-jr."
+description: "Features, limits and workspace migration for the native C++ and FLTK implementation of penthario."
 ---
 
 # FLTK implementation
@@ -47,7 +47,8 @@ Technical error messages may remain English or use the server's language.
 
 ## Workspace migration
 
-The native workspace uses JSON, keeping the preview frontend's location:
+Penthario retains the existing JSON workspace and credential-store identity
+from pgadmin-jr, so saved profiles, queries and passwords remain available:
 
 - Windows: `%APPDATA%/Hans/pgadmin-jr-fltk/settings.json`
 - macOS: `~/Library/Application Support/pgadmin-jr-fltk/settings.json`

@@ -15,13 +15,13 @@ The SVGs are embedded through a generated C++ header and rendered by
 
 ## Application icon
 
-`pgadmin-jr.svg` is the application artwork supplied by Hans, separate from the
+`penthario.svg` is the application artwork supplied by Hans, separate from the
 Lucide toolbar set. The Windows executable uses the derived ICO; the application
 uses the embedded SVG for its window and About dialog.
 Linux packaging installs the SVG under the existing desktop application ID.
 
-`pgadmin-jr.ico` contains 16, 24, 32, 48, 64, 128 and 256 pixel images for the
-Windows executable. `pgadmin-jr.icns` supplies macOS bundle sizes through 1024
+`penthario.ico` contains 16, 24, 32, 48, 64, 128 and 256 pixel images for the
+Windows executable. `penthario.icns` supplies macOS bundle sizes through 1024
 pixels, including retina variants. Both are generated from the SVG and committed.
 To regenerate them after changing the SVG, run:
 

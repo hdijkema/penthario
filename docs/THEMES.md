@@ -1,9 +1,12 @@
 ---
 title: Themes and custom CSS
-description: "Choose light, dark or classic themes and customise pgadmin-jr with local CSS overrides."
+description: "Choose light, dark or classic themes and customise penthario with local CSS overrides."
 ---
 
 # Themes and custom CSS
+
+Dark is the default for new workspaces and workspaces without a saved theme.
+An existing saved theme choice takes precedence.
 
 Choose **View → Theme → Light, Dark or Classic** to change the application's
 appearance. The choice is saved with the workspace. Switching themes preserves
@@ -27,7 +30,7 @@ icon.run { color: #8fe0ad; }
 The built-in sources live in `assets/themes/`. They are embedded at build time,
 so installed applications do not need separate theme files. Custom files are
 limited to 256 KiB. Invalid CSS leaves the active theme unchanged; if a saved
-file cannot be loaded at startup, the application uses Light and reports why.
+file cannot be loaded at startup, the application uses Dark and reports why.
 
 ## Styling scope
 

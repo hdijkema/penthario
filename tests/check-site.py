@@ -54,18 +54,18 @@ def check(site):
     guides = [file.relative_to(source) for file in source.rglob("*")
               if file.suffix in (".md", ".markdown")
               and file.relative_to(source).as_posix() != "assets/README.md"]
-    expected = {"/pgadmin-jr/" + file.with_suffix(".html").as_posix() for file in guides}
+    expected = {"/penthario/" + file.with_suffix(".html").as_posix() for file in guides}
     home = Page(site / "index.html")
     assert len(home.home_guides) == len(expected), "Unexpected homepage guide count"
     assert set(home.home_guides) == expected, "Homepage contains missing guides or non-Markdown assets"
     origin = "https://hdijkema.github.io"
-    homepage_url = origin + "/pgadmin-jr/"
+    homepage_url = origin + "/penthario/"
     check_metadata(home, homepage_url)
     for file in guides:
         page = Page(site / file.with_suffix(".html"))
         assert len(page.sidebar_guides) == len(expected), f"Unexpected sidebar count: {file}"
         assert set(page.sidebar_guides) == expected, f"Invalid sidebar entries: {file}"
-        check_metadata(page, origin + "/pgadmin-jr/" + file.with_suffix(".html").as_posix())
+        check_metadata(page, origin + "/penthario/" + file.with_suffix(".html").as_posix())
     theme_css = site / "assets/css/style.css"
     if theme_css.exists():
         css = theme_css.read_text(encoding="utf-8").lower()
@@ -93,7 +93,7 @@ def check_metadata(page, canonical):
         assert page.metadata.get(key), f"Missing {key}: {canonical}"
     assert page.metadata["og:url"] == canonical
     assert page.metadata["twitter:card"] == "summary_large_image"
-    assert page.metadata["og:image"].startswith("https://hdijkema.github.io/pgadmin-jr/")
+    assert page.metadata["og:image"].startswith("https://hdijkema.github.io/penthario/")
 
 
 if __name__ == "__main__":

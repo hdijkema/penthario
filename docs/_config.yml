@@ -1,10 +1,10 @@
-title: pgadmin-jr
-alternate_name: pgadmin junior
-description: "pgadmin-jr (pgadmin junior) is a native alternative to pgAdmin 4 for everyday PostgreSQL work: SQL editing, database browsing, exports and maintenance."
-social_image: /assets/pgadmin-jr-workspace.png
+title: Penthario
+alternate_name: [pgadmin-jr, pgadmin junior]
+description: "Penthario, formerly pgadmin-jr (pgadmin junior), is a native alternative to pgAdmin 4 for everyday PostgreSQL work: SQL editing, database browsing, exports and maintenance."
+social_image: /assets/penthario-workspace.png
 url: https://hdijkema.github.io
-baseurl: /pgadmin-jr
-repository_url: https://github.com/hdijkema/pgadmin-jr
+baseurl: /penthario
+repository_url: https://github.com/hdijkema/penthario
 markdown: kramdown
 kramdown:
   input: GFM

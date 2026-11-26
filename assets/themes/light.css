@@ -1,4 +1,4 @@
-/* pgadmin-jr: light. Supported properties are documented in docs/THEMES.md. */
+/* penthario: light. Supported properties are documented in docs/THEMES.md. */
 * { color: #203040; background: #edf1f5; selection-color: #2274b8; border-color: #c1ccd8; font-family: sans-serif; font-size: 14px; }
 window, group, widget, label, menu, tabs, panel { background: #edf1f5; color: #203040; }
 button { background: #e0e8f0; color: #203040; border: 1px solid #c1ccd8; border-radius: 4px; }

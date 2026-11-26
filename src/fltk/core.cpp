@@ -307,6 +307,8 @@ void writeFile(const std::filesystem::path &path, const std::string &text)
 }
 std::filesystem::path configDirectory()
 {
+    // Keep pgadmin-jr's storage identity across the Penthario rename; existing
+    // workspaces, query libraries and system-vault entries require no migration.
 #ifdef _WIN32
     const wchar_t *base = _wgetenv(L"APPDATA");
     return std::filesystem::path(base ? base : L".") / L"Hans" / L"pgadmin-jr-fltk";

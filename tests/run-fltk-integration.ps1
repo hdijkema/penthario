@@ -34,9 +34,9 @@ try {
     $env:PGADM_TEST_PORT = [string]$port
     $env:PGADM_TEST_DATA = $data
     $env:PGADM_TEST_STALL_PORT = [string]$stallListener.LocalEndpoint.Port
-    & (Join-Path $BuildDirectory 'pgadmin-fltk-tests.exe')
+    & (Join-Path $BuildDirectory 'penthario-tests.exe')
     if ($LASTEXITCODE -ne 0) { throw 'FLTK integration tests failed' }
-    & (Join-Path $BuildDirectory 'pgadmin-jr.exe') --settings-file (Join-Path $fixture 'workspace.json') --startup-check
+    & (Join-Path $BuildDirectory 'penthario.exe') --settings-file (Join-Path $fixture 'workspace.json') --startup-check
     if ($LASTEXITCODE -ne 0) { throw 'FLTK startup check failed' }
 } finally {
     $env:PGADM_TEST_PORT = $oldPort

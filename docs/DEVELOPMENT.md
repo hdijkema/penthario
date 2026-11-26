@@ -1,6 +1,6 @@
 ---
 title: Development
-description: "Build and test pgadmin-jr, and understand its native FLTK interface, PostgreSQL sessions and data flow."
+description: "Build and test penthario, and understand its native FLTK interface, PostgreSQL sessions and data flow."
 ---
 
 # Development
@@ -15,12 +15,12 @@ Use Visual Studio 2022 C++ tools, CMake and Ninja. The local scripts discover
 Visual Studio with vswhere. `PGADM_CMAKE` and `PGADM_NINJA` override tool paths;
 the defaults use CMake and Ninja from PATH.
 
-For sibling pgadmin-jr/fltk-cell/fltk-css/fltk-dock/fltk-toolbar development checkouts:
+For sibling penthario/fltk-cell/fltk-css/fltk-dock/fltk-toolbar development checkouts:
 
 ```powershell
 .\build-fltk.cmd -DFLTK_DIR=C:/path/to/FLTK/CMake
 ctest --test-dir build/fltk --output-on-failure
-.\build\fltk\pgadmin-jr.exe
+.\build\fltk\penthario.exe
 ```
 
 For the distribution build, use `build-release.cmd`; it writes `build/Release`.
@@ -64,7 +64,7 @@ colors. See [themes](THEMES.md) for selectors and the editable translation catal
 `fltk-toolbar::Toolbar` owns and places the toolbar buttons and separators.
 `Fl_Css_Widget<fltk_toolbar::SvgButton>` adds CSS painting to SVG buttons without
 making fltk-toolbar depend on CSS. SVG image ownership and disabled images belong
-to the toolbar library; pgadmin-jr chooses icon colors and binds commands.
+to the toolbar library; penthario chooses icon colors and binds commands.
 
 Each Session owns its libpq connection on one worker. The GUI consumes bounded
 event batches, discarding stale execution generations. Catalog and administrative
@@ -118,15 +118,15 @@ placement. Until the first fltk-dock source tag is published, configure with
 Jekyll converts the Markdown guides alongside it into HTML, using
 `docs/_config.yml` and `docs/_layouts/documentation.html`. The documentation
 layout supplies navigation, links back to the homepage and the same theme
-control. Its logo and favicon are copies of `assets/icons/pgadmin-jr.svg`
-and `assets/icons/pgadmin-jr.ico` under `docs/assets/`; refresh those copies when
+control. Its logo and favicon are copies of `assets/icons/penthario.svg`
+and `assets/icons/penthario.ico` under `docs/assets/`; refresh those copies when
 the application branding changes. The site uses system fonts and no third-party
 services. `dark.css` follows the system preference without JavaScript; the small
 `theme.js` control allows a manual override and remembers it in local browser
 storage when available. The racing elephant illustration is recovered from the
 original artwork; provenance is recorded in `docs/assets/README.md`.
 
-To publish at <https://hdijkema.github.io/pgadmin-jr/>, select **Deploy from a
+To publish at <https://hdijkema.github.io/penthario/>, select **Deploy from a
 branch** in the repository's **Settings > Pages**, then choose the default
 branch and `/docs`. There is no `.nojekyll` marker: GitHub runs its built-in
 Jekyll build on publication. Application release workflows do not need to build
@@ -152,13 +152,13 @@ For local website builds, use Jekyll 3.10 and its `jekyll-relative-links`,
 tools, not application dependencies. From the repository root:
 
 ```sh
-jekyll build --source docs --destination build/pages/pgadmin-jr
-python tests/check-site.py build/pages/pgadmin-jr
+jekyll build --source docs --destination build/pages/penthario
+python tests/check-site.py build/pages/penthario
 python -m http.server 8000 --directory build/pages
 ```
 
-Open `http://localhost:8000/pgadmin-jr/`. The destination deliberately includes
-the configured `/pgadmin-jr` base path so local asset and documentation URLs
+Open `http://localhost:8000/penthario/`. The destination deliberately includes
+the configured `/penthario` base path so local asset and documentation URLs
 match GitHub Pages. Preview the generated site: the source `docs/index.html`
 contains Liquid markup for the documentation list and is not a standalone HTML
 preview.
@@ -171,18 +171,18 @@ a SoftwareApplication using JSON-LD. Guide descriptions live in Markdown front
 matter; `_config.yml` supplies the fallback description and preview image.
 
 Jekyll generates `sitemap.xml` from the homepage and Markdown documentation,
-using the configured HTTPS host and `/pgadmin-jr` base path. Assets and Google
+using the configured HTTPS host and `/penthario` base path. Assets and Google
 verification files are not sitemap entries. No additional Jekyll plugins are
 required. After publication, submit this URL in Google Search Console:
 
-<https://hdijkema.github.io/pgadmin-jr/sitemap.xml>
+<https://hdijkema.github.io/penthario/sitemap.xml>
 
 Google HTML verification files in `docs/google*.html` are copied byte-for-byte.
-Use the URL-prefix property `https://hdijkema.github.io/pgadmin-jr/` in Search
+Use the URL-prefix property `https://hdijkema.github.io/penthario/` in Search
 Console, and retain the verification file after verification succeeds.
 
 Robots rules belong at `https://hdijkema.github.io/robots.txt`, outside this
-project site's publishing root. A `/pgadmin-jr/robots.txt` file would not control
+project site's publishing root. A `/penthario/robots.txt` file would not control
 crawling. No robots file is needed to allow crawling; if the domain-root site
 already has one, its owner can add the sitemap URL while preserving existing
 rules. This repository does not change that separate site. See Google's
@@ -213,6 +213,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests/run-fltk-integration.p
 It creates its own PostgreSQL cluster and disposable databases, checks ownership
 before mutations, and shuts that cluster down. Never point it at an existing
 server. Packaging checks use private settings and installer identities.
+
+## Penthario product identity
+
+The product, executable and package name is Penthario (`penthario` in paths and
+commands). The source checkout may still be named `pgadmin-jr`; changing that
+directory requires reconfiguring existing CMake build directories.
+
+The application ID `io.github.hdijkema.AltPgAdmin`, workspace directories and
+credential service `pgadmin-jr-fltk` remain stable for existing installations.
+Profile IDs, credentials and saved queries therefore need no migration. The
+Windows installer keeps its upgrade identity, replaces the old executable and
+shortcuts, and retains user data. Debian packages replace/conflict with the old
+package names. The website also retains its existing theme-preference storage
+key; public links and canonical URLs use `/penthario/`.
+
+Internal `pgjr` namespaces and `PGADM_*` build options remain source/build
+compatibility names. New package artifacts and CMake application/test targets
+use `penthario`. The existing screenshot is explicitly labelled as an earlier
+pgadmin-jr build; its pixels and the existing application artwork are unchanged.
 
 ## Windows FLTK SDK configuration
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 #########################################################################################################################
-# PGADMIN_JR version
+# PENTHARIO version
 #########################################################################################################################
 
 set(PGADM_RELEASE_VERSION "" CACHE STRING "Release version (major.minor.patch); empty uses the development version")
@@ -12,5 +12,5 @@ if(NOT PGADM_RELEASE_VERSION STREQUAL "")
     endif()
     set(PGADM_VERSION "${PGADM_RELEASE_VERSION}")
 endif()
-project(pgadmin-jr VERSION ${PGADM_VERSION} LANGUAGES C CXX)
+project(penthario VERSION ${PGADM_VERSION} LANGUAGES C CXX)
 include(cmake/FltkApplication.cmake)

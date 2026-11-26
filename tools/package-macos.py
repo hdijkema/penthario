@@ -51,8 +51,8 @@ def package(build: Path, pg: Path, requested_version: str) -> None:
     reports.mkdir()
     image_root = work / 'image'
     image_root.mkdir()
-    app = image_root / 'pgadmin-jr.app'
-    shutil.copytree(build / 'pgadmin-jr.app', app, symlinks=True)
+    app = image_root / 'penthario.app'
+    shutil.copytree(build / 'penthario.app', app, symlinks=True)
     move_license_notices(app)
     with (app / 'Contents/Info.plist').open('rb') as stream:
         info = plistlib.load(stream)
@@ -69,13 +69,13 @@ def package(build: Path, pg: Path, requested_version: str) -> None:
     frameworks.mkdir(exist_ok=True)
     tools = ['pg_dump', 'pg_restore', 'psql', 'createdb', 'dropdb']
     dependency_arguments = ['dylibbundler', '-b', '-cd', '-of', '-d', frameworks,
-                            '-p', '@executable_path/../Frameworks/', '-x', binaries / 'pgadmin-jr']
+                            '-p', '@executable_path/../Frameworks/', '-x', binaries / 'penthario']
     for tool in tools:
         shutil.copy2(pg / 'bin' / tool, binaries / tool, follow_symlinks=True)
         (binaries / tool).chmod((binaries / tool).stat().st_mode | 0o200)
         dependency_arguments.extend(['-x', binaries / tool])
     run(dependency_arguments)
-    executable = binaries / 'pgadmin-jr'
+    executable = binaries / 'penthario'
     licenses = app / 'Contents/Resources/licenses'
     licenses.mkdir(parents=True, exist_ok=True)
     shutil.copytree(build / 'notices', licenses, dirs_exist_ok=True)
@@ -119,8 +119,8 @@ def package(build: Path, pg: Path, requested_version: str) -> None:
     run(['codesign', '--verify', '--deep', '--strict', app])
     (image_root / 'Applications').symlink_to('/Applications', target_is_directory=True)
     suffix = '-' + version if requested_version else ''
-    image = work / f'pgadmin-jr{suffix}-macos-arm64.dmg'
-    run(['hdiutil', 'create', '-volname', 'pgadmin-jr', '-srcfolder', image_root,
+    image = work / f'penthario{suffix}-macos-arm64.dmg'
+    run(['hdiutil', 'create', '-volname', 'Penthario', '-srcfolder', image_root,
          '-format', 'UDZO', image])
     run(['hdiutil', 'verify', image])
     mount = work / 'mounted'
@@ -134,7 +134,7 @@ def package(build: Path, pg: Path, requested_version: str) -> None:
             environment.pop(key, None)
         for language in ['nl', 'en', 'de']:
             report = reports / f'startup-{language}.txt'
-            run([mounted / 'Contents/MacOS/pgadmin-jr', '--language', language, '--startup-check',
+            run([mounted / 'Contents/MacOS/penthario', '--language', language, '--startup-check',
                  '--settings-file', work / f'settings-{language}.json', '--startup-report', report],
                 env=environment, timeout=30)
             if f'Application version: {version}' not in report.read_text():

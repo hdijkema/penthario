@@ -19,7 +19,7 @@ cmake --build "$build_dir" --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
 ctest --test-dir "$build_dir" --output-on-failure
 for language in nl en de; do
     printf 'Checking application startup (%s)\n' "$language"
-    xvfb-run -a "$build_dir/pgadmin-jr" --language "$language" \
+    xvfb-run -a "$build_dir/penthario" --language "$language" \
         --settings-file "$repo_dir/$build_dir/smoke-$language.json" --startup-check \
         --startup-report "$repo_dir/$build_dir/startup-$language.txt"
     test -s "$repo_dir/$build_dir/startup-$language.txt"

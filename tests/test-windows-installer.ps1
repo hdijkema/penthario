@@ -20,7 +20,7 @@ $SourceDirectory = (Resolve-Path -LiteralPath $SourceDirectory).Path
 $InnoCompiler = (Resolve-Path -LiteralPath $InnoCompiler).Path
 $identity = [guid]::NewGuid().ToString('N')
 # Keep the private AppId short so Inno does not shorten its uninstall registry key.
-$installerAppId = "pgadmin-jr.Test.$identity"
+$installerAppId = "penthario.Test.$identity"
 $uninstallRoot = if ($InstallScope -eq 'AllUsers') { 'HKLM:' } else { 'HKCU:' }
 $uninstallKey = "$uninstallRoot\Software\Microsoft\Windows\CurrentVersion\Uninstall\${installerAppId}_is1"
 $fixture = Join-Path $project "build/Release/installer-test-$identity"
@@ -28,11 +28,11 @@ $installed = [System.IO.Path]::GetFullPath((Join-Path $fixture 'Application'))
 $buildRoot = [System.IO.Path]::GetFullPath((Join-Path $project 'build')) + [System.IO.Path]::DirectorySeparatorChar
 if (!$installed.StartsWith($buildRoot, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Installer test path escapes the build directory.' }
 New-Item -ItemType Directory -Path $fixture | Out-Null
-$script = Join-Path $project 'packaging/windows/pgadmin-jr.iss'
+$script = Join-Path $project 'packaging/windows/penthario.iss'
 & $InnoCompiler '/Q' "/DAppVersion=$Version" "/DSourceDirectory=$SourceDirectory" "/DOutputDirectory=$fixture" `
-    "/DInstallerAppId=$installerAppId" "/DInstallerName=pgadmin-jr Installer Test $identity" $script
+    "/DInstallerAppId=$installerAppId" "/DInstallerName=penthario Installer Test $identity" $script
 if ($LASTEXITCODE -ne 0) { throw 'Private test installer compilation failed.' }
-$setup = Join-Path $fixture "pgadmin-jr-$Version-windows-x64-setup.exe"
+$setup = Join-Path $fixture "penthario-$Version-windows-x64-setup.exe"
 
 # Bound silent processes so a hidden installer prompt cannot hang local or hosted tests.
 function Invoke-InstallerTestProcess([string]$Executable, [string[]]$Arguments) {
@@ -47,10 +47,10 @@ Set-Content -LiteralPath $settings -Value $settingsContents -Encoding ASCII -NoN
 $settingsHash = (Get-FileHash -LiteralPath $settings).Hash
 try {
     Invoke-InstallerTestProcess $setup @($scopeArgument, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/install.log`"")
-    $executable = Join-Path $installed 'pgadmin-jr.exe'
+    $executable = Join-Path $installed 'penthario.exe'
     if (!(Test-Path -LiteralPath $executable)) { throw 'The application was not installed.' }
     if (!(Test-Path -LiteralPath $uninstallKey)) { throw 'Uninstall registration does not match the selected install scope.' }
-    if ((Get-FileHash -LiteralPath $executable).Hash -ne (Get-FileHash -LiteralPath (Join-Path $SourceDirectory 'pgadmin-jr.exe')).Hash) {
+    if ((Get-FileHash -LiteralPath $executable).Hash -ne (Get-FileHash -LiteralPath (Join-Path $SourceDirectory 'penthario.exe')).Hash) {
         throw 'Installed application differs from the validated portable application.'
     }
     $report = Join-Path $fixture 'startup.txt'
@@ -62,10 +62,14 @@ try {
     $query = Join-Path $installed 'user-query.sql'
     Set-Content -LiteralPath $query -Value "SELECT '$identity';" -Encoding ASCII
     $queryHash = (Get-FileHash -LiteralPath $query).Hash
+    # Model an in-place rename upgrade inside the isolated application directory.
+    $legacyExecutable = Join-Path $installed 'pgadmin-jr.exe'
+    Set-Content -LiteralPath $legacyExecutable -Value 'superseded application' -Encoding ASCII
     $svgLibrary = Join-Path $installed 'libpq.dll'
     Remove-Item -LiteralPath $svgLibrary
     Invoke-InstallerTestProcess $setup @($scopeArgument, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$installed`"", "/LOG=`"$fixture/reinstall.log`"")
     if (!(Test-Path -LiteralPath $svgLibrary)) { throw 'Reinstallation did not restore an installed file.' }
+    if (Test-Path -LiteralPath $legacyExecutable) { throw 'The superseded pgadmin-jr executable was not removed.' }
     if ((Get-FileHash -LiteralPath $query).Hash -ne $queryHash) { throw 'Reinstallation changed an untracked query file.' }
 } finally {
     $uninstaller = Join-Path $installed 'unins000.exe'
@@ -73,7 +77,7 @@ try {
         Invoke-InstallerTestProcess $uninstaller @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$fixture/uninstall.log`"")
     }
 }
-if (Test-Path -LiteralPath (Join-Path $installed 'pgadmin-jr.exe')) { throw 'Uninstallation left the application executable.' }
+if (Test-Path -LiteralPath (Join-Path $installed 'penthario.exe')) { throw 'Uninstallation left the application executable.' }
 if (Test-Path -LiteralPath $uninstallKey) { throw 'Uninstallation left its private registration.' }
 if ((Get-FileHash -LiteralPath $query).Hash -ne $queryHash) { throw 'Uninstallation removed or changed the untracked query file.' }
 if ((Get-FileHash -LiteralPath $settings).Hash -ne $settingsHash) { throw 'Installation or removal changed separate settings.' }

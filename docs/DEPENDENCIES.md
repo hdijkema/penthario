@@ -1,6 +1,6 @@
 ---
 title: Dependencies and releases
-description: "Libraries, selected releases and source repositories used to build pgadmin-jr."
+description: "Libraries, selected releases and source repositories used to build penthario."
 ---
 
 # Dependencies and releases
@@ -22,7 +22,7 @@ description: "Libraries, selected releases and source repositories used to build
 
 [fltk-trayicon](https://github.com/hdijkema/fltk-trayicon) is a separate library
 at version 0.1.0, also targeting FLTK 1.4.5.
-It is not a dependency of pgadmin-jr, which has no tray workflow.
+It is not a dependency of penthario, which has no tray workflow.
 
 Dependencies use explicit release tags or checksummed release archives rather
 than moving branches or arbitrary development commits. An installed FLTK package

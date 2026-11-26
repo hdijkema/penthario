@@ -149,7 +149,7 @@ void Session::open(const Work &work)
                             secret.empty() ? nullptr : secret.c_str(),
                             work.profile.ssl.c_str(),
                             timeout.c_str(),
-                            "pgadmin-jr",
+                            "penthario",
                             "UTF8",
                             nullptr};
     const auto deadline =

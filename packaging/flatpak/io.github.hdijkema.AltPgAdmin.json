@@ -3,7 +3,7 @@
   "runtime": "org.freedesktop.Platform",
   "runtime-version": "26.08",
   "sdk": "org.freedesktop.Sdk",
-  "command": "pgadmin-jr",
+  "command": "penthario",
   "finish-args": [
     "--share=ipc",
     "--share=network",
@@ -63,22 +63,22 @@
       ]
     },
     {
-      "name": "pgadmin-jr",
+      "name": "penthario",
       "buildsystem": "cmake-ninja",
       "config-opts": [
         "-DCMAKE_BUILD_TYPE=Release",
         "-DPGADM_FLTK_TESTS=OFF",
         "-DFLTK_BACKEND_WAYLAND=OFF",
         "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
-        "-DPGADM_FLTK_CELL_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-cell",
-        "-DPGADM_FLTK_DOCK_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-dock",
-        "-DFLTK_CELL_CSS_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-css",
-        "-DFETCHCONTENT_SOURCE_DIR_FLTK=/run/build/pgadmin-jr/vendor/fltk",
-        "-DFETCHCONTENT_SOURCE_DIR_FLTK_JSON=/run/build/pgadmin-jr/vendor/json",
-        "-DFETCHCONTENT_SOURCE_DIR_FLTK_KEYCHAIN=/run/build/pgadmin-jr/vendor/keychain",
-        "-DFETCHCONTENT_SOURCE_DIR_ZLIB=/run/build/pgadmin-jr/vendor/zlib",
-        "-DFETCHCONTENT_SOURCE_DIR_LIBXLSXWRITER=/run/build/pgadmin-jr/vendor/libxlsxwriter",
-        "-DPGADM_FLTK_TOOLBAR_SOURCE_DIR=/run/build/pgadmin-jr/vendor/fltk-toolbar"
+        "-DPGADM_FLTK_CELL_SOURCE_DIR=/run/build/penthario/vendor/fltk-cell",
+        "-DPGADM_FLTK_DOCK_SOURCE_DIR=/run/build/penthario/vendor/fltk-dock",
+        "-DFLTK_CELL_CSS_SOURCE_DIR=/run/build/penthario/vendor/fltk-css",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK=/run/build/penthario/vendor/fltk",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK_JSON=/run/build/penthario/vendor/json",
+        "-DFETCHCONTENT_SOURCE_DIR_FLTK_KEYCHAIN=/run/build/penthario/vendor/keychain",
+        "-DFETCHCONTENT_SOURCE_DIR_ZLIB=/run/build/penthario/vendor/zlib",
+        "-DFETCHCONTENT_SOURCE_DIR_LIBXLSXWRITER=/run/build/penthario/vendor/libxlsxwriter",
+        "-DPGADM_FLTK_TOOLBAR_SOURCE_DIR=/run/build/penthario/vendor/fltk-toolbar"
       ],
       "sources": [
         {

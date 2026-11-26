@@ -1,14 +1,16 @@
-# pgadmin-jr (pgadmin junior)
+# Penthario
 
-<img src="assets/icons/pgadmin-jr.svg" width="96" alt="pgadmin-jr elephant icon">
+<img src="assets/icons/penthario.svg" width="96" alt="penthario elephant icon">
 
-**A native alternative to pgAdmin 4 for everyday PostgreSQL work.** Also known
-as pgadmin junior, pgadmin-jr is an independent open-source project focused on
-the PostgreSQL tasks you use most often.
+**The Master of Transactions**
 
-[Project homepage](https://hdijkema.github.io/pgadmin-jr/)
+A native alternative to pgAdmin 4 for everyday PostgreSQL work. Formerly known
+as pgadmin-jr (pgadmin junior), Penthario is an independent open-source project
+focused on the PostgreSQL tasks you use most often.
 
-pgadmin-jr brings SQL editing, database browsing, result export and administration
+[Project homepage](https://hdijkema.github.io/penthario/)
+
+Penthario brings SQL editing, database browsing, result export and administration
 into a C++17/FLTK application. Connect to a server, choose a database and work
 in independent query tabs, each with its own session and transaction.
 
@@ -54,12 +56,15 @@ use the connected role's privileges; the application does not bypass server perm
 
 ## Get started
 
-Download the package for your system from [GitHub Releases](https://github.com/hdijkema/pgadmin-jr/releases).
+Download the package for your system from [GitHub Releases](https://github.com/hdijkema/penthario/releases).
 Release builds provide a Windows installer and portable ZIP, an Apple Silicon macOS
 DMG, Debian 12/13 packages for amd64 and ARM64, and an x86_64 Flatpak bundle.
 ARM64 Debian packages require a 64-bit OS with matching dependencies, including
 on Raspberry Pi. macOS signing/notarisation and platform validation limits are
 described in the packaging documentation below.
+
+The macOS build has been reported working out of the box on a MacBook Air M1.
+See the [validation report](docs/VALIDATION.md) for the scope of platform checks.
 
 1. Start the application and create a connection profile with your server, port
    and PostgreSQL user. Usually use `postgres` as the maintenance database.
@@ -81,6 +86,7 @@ See [FLTK implementation](docs/FLTK.md) for limits and migration details.
 - [User and build guide](docs/USER-GUIDE.md): detailed usage, shortcuts, settings,
   dependencies, local builds and tests.
 - [Validation report](docs/VALIDATION.md): local checks and platform limits.
+- [Release notes](RELEASE-NOTES.md): highlights of version 0.4.4.
 - [Development guide](docs/DEVELOPMENT.md): component responsibilities, sessions
   and data flow.
 - [Source layout](docs/SOURCE-LAYOUT.md): where the application code lives.

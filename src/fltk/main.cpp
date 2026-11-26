@@ -29,7 +29,7 @@ int main(int argc, char **argv)
             requested_language = argv[++i];
         else if (arg == "--version")
         {
-            std::cout << "pgadmin-jr " << PGADM_APP_VERSION << '\n';
+            std::cout << "penthario " << PGADM_APP_VERSION << '\n';
             return 0;
         }
         else
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     {
         std::cerr << error.what() << '\n';
         if (!smoke)
-            fl_alert("pgadmin-jr could not start:\n%s", error.what());
+            fl_alert("Penthario could not start:\n%s", error.what());
         return 1;
     }
 }

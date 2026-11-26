@@ -1,4 +1,4 @@
-/* pgadmin-jr: classic. Supported properties are documented in docs/THEMES.md. */
+/* penthario: classic. Supported properties are documented in docs/THEMES.md. */
 * { color: #202020; background: #e5e5e5; selection-color: #235baa; border-color: #999999; font-family: sans-serif; font-size: 14px; }
 window, group, widget, label, menu, tabs, panel { background: #e5e5e5; color: #202020; }
 button { background: #e5e5e5; color: #202020; border: 1px solid #999999; border-radius: 0px; }

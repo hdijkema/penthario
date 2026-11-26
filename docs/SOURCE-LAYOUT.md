@@ -1,6 +1,6 @@
 ---
 title: Source layout
-description: "Find the application, database, interface, test and packaging sources in the pgadmin-jr repository."
+description: "Find the application, database, interface, test and packaging sources in the penthario repository."
 ---
 
 # Source layout

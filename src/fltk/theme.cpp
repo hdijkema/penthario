@@ -6,7 +6,7 @@ namespace pgjr
 {
 Theme::Theme(FLTK_Css &sheet) : sheet_(sheet)
 {
-    load("light");
+    load("dark");
 }
 FLTK_Css_Style Theme::style(const char *type, std::vector<std::string> classes) const
 {

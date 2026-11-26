@@ -123,7 +123,7 @@ int ToolJob::process(const std::filesystem::path &executable, const std::vector<
         {"PGSSLMODE", profile.ssl},
         {"PGCONNECT_TIMEOUT", std::to_string(std::clamp(profile.timeout, 2, 120))},
         {"PGCLIENTENCODING", "UTF8"},
-        {"PGAPPNAME", "pgadmin-jr tools"}};
+        {"PGAPPNAME", "penthario tools"}};
     if (!secret.empty())
         pg["PGPASSWORD"] = secret;
     auto ignored = [&](const std::string &key)

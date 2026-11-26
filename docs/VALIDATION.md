@@ -1,6 +1,6 @@
 ---
 title: Validation report
-description: "Local build, packaging, PostgreSQL and interface validation results for pgadmin-jr, including platform limits."
+description: "Local build, packaging, PostgreSQL and interface validation results for penthario, including platform limits."
 ---
 
 # Local validation: 23 November 2026
@@ -117,3 +117,32 @@ Actual all-users installation was not run: this session is not elevated.
 No GitHub Pages settings or remote deployments were changed. The preview server
 and browser were stopped; website build tools remain in the ignored local build
 directory and are not application dependencies.
+
+## 26 November 2026: MacBook Air M1 user report
+
+Hans reported that the macOS build worked out of the box on his MacBook Air M1.
+This is a real-device user check on Apple Silicon, in addition to the hosted
+macOS build workflow. The exact application version, macOS version and individual
+feature checks were not recorded. This report does not establish Intel Mac
+compatibility, Developer ID signing/notarisation or full macOS feature coverage.
+
+## 26 November 2026: Penthario rename
+
+The Windows x64 Release build produces `penthario.exe`. All four application
+CTest checks pass, including the About homepage link and saved-workspace behavior.
+The About dialog with the Penthario name and The Master of Transactions slogan
+was visually inspected. Release-version checks, thirteen release-asset tests and
+five macOS dependency-audit helper tests pass with the renamed artifacts.
+
+The portable ZIP and Inno Setup installer build under the new name. An isolated
+current-user installer check covers install/reinstall/startup/uninstall and
+preservation of user SQL/settings. Storage paths, credential service and upgrade
+identities remain unchanged; no production workspace or vault entries were used.
+
+The Jekyll site builds at `/penthario/`. Navigation for all ten guides, canonical
+URLs, metadata, sitemap, Google verification and asset isolation pass checks.
+Headless Chrome checks at 320, 768 and 1440 pixels show no page overflow or missing
+hero artwork. The homepage with the new brand, slogan and mascot title was
+visually inspected. Native macOS/Linux packages with the new name still require
+their respective platform workflows; the earlier M1 report applies to the build
+tested by Hans before this rename.
