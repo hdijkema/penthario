@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-theme-key="pgadmin-jr-theme">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
   <link rel="icon" href="{{ '/assets/penthario.ico' | relative_url }}" sizes="any">
   <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/documentation.css' | relative_url }}">
-  <link id="dark-theme" rel="stylesheet" href="{{ '/dark.css' | relative_url }}" media="(prefers-color-scheme: dark)">
+  <link id="dark-theme" rel="stylesheet" href="{{ '/dark.css' | relative_url }}">
   <script src="{{ '/theme.js' | relative_url }}"></script>
 </head>
 <body>
@@ -19,10 +19,11 @@
       <img src="{{ '/assets/penthario.svg' | relative_url }}" width="42" height="42" alt="">
       <span>Penthario</span>
     </a>
-    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Dark theme" aria-pressed="false" hidden><span aria-hidden="true">◐</span> Dark theme</button>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" hidden>Light theme</button>
     <nav aria-label="Main navigation">
       <a href="{{ '/' | relative_url }}">Home</a>
       <a href="{{ '/USER-GUIDE.html' | relative_url }}">Docs</a>
+      <a href="{{ '/LIBRARIES.html' | relative_url }}">Libraries</a>
       <a href="{{ site.repository_url }}">View it on GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </header>

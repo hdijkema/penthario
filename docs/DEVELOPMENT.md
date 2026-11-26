@@ -121,9 +121,9 @@ layout supplies navigation, links back to the homepage and the same theme
 control. Its logo and favicon are copies of `assets/icons/penthario.svg`
 and `assets/icons/penthario.ico` under `docs/assets/`; refresh those copies when
 the application branding changes. The site uses system fonts and no third-party
-services. `dark.css` follows the system preference without JavaScript; the small
-`theme.js` control allows a manual override and remembers it in local browser
-storage when available. The racing elephant illustration is recovered from the
+services. `dark.css` is enabled by default, including without JavaScript. The small
+`theme.js` control switches between dark and light and remembers an explicit
+choice in local browser storage when available. The racing elephant illustration is recovered from the
 original artwork; provenance is recorded in `docs/assets/README.md`.
 
 To publish at <https://hdijkema.github.io/penthario/>, select **Deploy from a
@@ -146,6 +146,11 @@ the complete HTML document in another layout.
 Both navigation lists explicitly accept only `.md` and `.markdown` source files,
 and the default documentation layout is scoped to those extensions. Theme
 stylesheets, scripts and other generated assets are never documentation entries.
+
+`LIBRARIES.md` links to the API references and usage examples maintained in each
+widget library's own `docs/API.md`. This site documents Penthario's integration;
+the library repositories own their APIs, examples and installation instructions.
+Keep dependency release selection in `DEPENDENCIES.md`.
 
 For local website builds, use Jekyll 3.10 and its `jekyll-relative-links`,
 `jekyll-optional-front-matter` and `kramdown-parser-gfm` gems. These are website
@@ -242,3 +247,12 @@ executable. The application disallows that fallback and the Windows packager
 checks `Console window: none` in the isolated startup report. Build FLTK itself
 in Release, or let FetchContent build the selected FLTK release with the app.
 Keep a Debug SDK in a separate prefix when both configurations are needed.
+
+## Website theme control
+
+The homepage and documentation layout start with `data-theme="dark"`.
+`theme.js` restores a saved light/dark choice before the body paints and attaches
+the keyboard-accessible header button. The preference uses the site's own
+`data-theme-key` in local storage; storage failures do not prevent switching.
+The default is dark even when the operating system prefers light. Without
+JavaScript, the pages retain their default dark appearance.

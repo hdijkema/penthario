@@ -5,6 +5,9 @@ description: "Libraries, selected releases and source repositories used to build
 
 # Dependencies and releases
 
+For the public APIs and C++ usage examples of the four widget libraries, see
+[Library documentation](LIBRARIES.md).
+
 | Component | Selected release | Purpose |
 | --- | --- | --- |
 | [FLTK](https://www.fltk.org/) | 1.4.5 (`release-1.4.5`) | Native widgets, drawing, SVG |

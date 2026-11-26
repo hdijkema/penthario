@@ -1,4 +1,4 @@
-/* Loaded for the system dark preference or an explicit visitor choice. */
+/* Loaded by default; the theme control disables it for an explicit light choice. */
 :root {
   color-scheme: dark;
   --text: #e2eaf1;
