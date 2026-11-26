@@ -217,11 +217,11 @@ server. Packaging checks use private settings and installer identities.
 ## Penthario product identity
 
 The product, executable and package name is Penthario (`penthario` in paths and
-commands). The source checkout may still be named `pgadmin-jr`; changing that
-directory requires reconfiguring existing CMake build directories.
+commands). Renaming the source checkout directory requires reconfiguring
+existing CMake build directories.
 
 The application ID `io.github.hdijkema.AltPgAdmin`, workspace directories and
-credential service `pgadmin-jr-fltk` remain stable for existing installations.
+credential service remain stable for existing installations.
 Profile IDs, credentials and saved queries therefore need no migration. The
 Windows installer keeps its upgrade identity, replaces the old executable and
 shortcuts, and retains user data. Debian packages replace/conflict with the old
@@ -231,7 +231,7 @@ key; public links and canonical URLs use `/penthario/`.
 Internal `pgjr` namespaces and `PGADM_*` build options remain source/build
 compatibility names. New package artifacts and CMake application/test targets
 use `penthario`. The existing screenshot is explicitly labelled as an earlier
-pgadmin-jr build; its pixels and the existing application artwork are unchanged.
+build; its pixels and the existing application artwork are unchanged.
 
 ## Windows FLTK SDK configuration
 

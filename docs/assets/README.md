@@ -10,8 +10,7 @@
 - `penthario-workspace.png` is the Windows screenshot supplied by Hans, showing
   the dark theme, database browser, SQL editor, results and history. The original
   pixels are preserved; the homepage displays it responsively and links to the
-  full-size image. It shows the earlier pgadmin-jr branding; the caption identifies
-  it as a screenshot from before the Penthario rename.
+  full-size image. The caption identifies it as a screenshot from an earlier build.
 
 All assets are local to the static homepage. No image service or external font
 provider is required.

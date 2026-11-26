@@ -8,8 +8,8 @@ A lightweight PostgreSQL administration tool.
 
 *Less machinery. More magic.*
 
-Formerly known as pgadmin-jr (pgadmin junior), Penthario is an independent
-open-source project focused on the PostgreSQL tasks you use most often.
+Penthario is an independent open-source project focused on the PostgreSQL
+tasks you use most often.
 
 [Project homepage](https://hdijkema.github.io/penthario/)
 

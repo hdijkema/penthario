@@ -47,13 +47,11 @@ Technical error messages may remain English or use the server's language.
 
 ## Workspace migration
 
-Penthario retains the existing JSON workspace and credential-store identity
-from pgadmin-jr, so saved profiles, queries and passwords remain available:
-
-- Windows: `%APPDATA%/Hans/pgadmin-jr-fltk/settings.json`
-- macOS: `~/Library/Application Support/pgadmin-jr-fltk/settings.json`
-- Linux: `$XDG_CONFIG_HOME/pgadmin-jr-fltk/settings.json`, falling back to
-  `~/.config/pgadmin-jr-fltk/settings.json`.
+Penthario retains the existing JSON workspace location and credential-store
+identity, so saved profiles, queries and passwords remain available. The
+`settings.json` file stays in its existing application configuration directory:
+under `%APPDATA%/Hans` on Windows, `~/Library/Application Support` on macOS,
+and `$XDG_CONFIG_HOME` (or `~/.config`) on Linux.
 
 Use the import command to read an legacy workspace INI and its saved query
 library. Original files are retained; conflicting named queries are skipped.
