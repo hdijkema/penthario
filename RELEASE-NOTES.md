@@ -1,10 +1,6 @@
-# Penthario 0.4.4
+## A lightweight PostgreSQL administration tool.
 
-**The Master of Relations**
-
-A lightweight PostgreSQL administration tool.
-
-*Less machinery. More magic.*
+## *Less machinery. More magic.*
 
 Penthario brings SQL editing, database browsing and everyday administration 
 into a focused desktop application. Its C++/FLTK interface is designed for 
